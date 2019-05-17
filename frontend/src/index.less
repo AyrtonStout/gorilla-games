@@ -1,0 +1,45 @@
+@import "components/site-wrapper/site-wrapper";
+
+@deep-blue: #99D5F1;
+@light-blue: #B0DEF4;
+@deeper-blue: #4A9FC8;
+@select-blue: #626FAB;
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: @light-blue;
+}
+
+ul {
+  list-style-type: none;
+}
+
+input {
+  border-width: 1px; // Apparently Firefox on Linux puts a 6px border on all the inputs??
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.d-none {
+  display: none;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.vertical-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+// Only toast library override. Just looks a little nicer
+#root {
+  .Toastify__toast-body {
+    margin-left: 5px;
+  }
+}
