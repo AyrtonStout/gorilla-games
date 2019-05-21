@@ -1,10 +1,13 @@
 project(hello)
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-add_definitions(-DSTANDALONE)
-add_executable(${PROJECT_NAME} hello_owl.cpp)
+#if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+#    set(CMAKE_C_COMPILER "emcc")
+#endif ()
+
+add_executable(${PROJECT_NAME} hello_owl.cpp game_cursor.cpp game_cursor.h direction.h)
 
 INCLUDE(FindPkgConfig)
 
