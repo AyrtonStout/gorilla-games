@@ -5,6 +5,6 @@
 #ifndef HELLO_DIRECTION_H
 #define HELLO_DIRECTION_H
 
-enum Direction { UP, DOWN, LEFT, RIGHT };
+enum Direction { UP, DOWN, LEFT, RIGHT, NONE };
 
 #endif //HELLO_DIRECTION_H

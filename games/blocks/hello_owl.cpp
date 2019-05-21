@@ -7,8 +7,10 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <map>
 #include "game_cursor.h"
 #include "direction.h"
+#include "game_grid.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -23,60 +25,50 @@ const string pathPrefix = "../"; // NOLINT(cert-err58-cpp)
 const string pathPrefix = "./";
 #endif
 
+const int scaling = 3;
 
 struct context
 {
     SDL_Renderer *renderer;
+    map<BlockType, SDL_Texture*> block_textures;
 
-    /**
-     * Rectangle that the owl texture will be rendered into
-     */
-    SDL_Rect dest;
-    SDL_Texture *owl_tex;
     GameCursor game_cursor;
+    GameGrid game_grid;
     bool loop_forever = true;
 };
 
-/**
- * Loads the image located at 'fileName' and copies it to the
- * renderer 'renderer'
- */
-int testImage(context *ctx, const string &fileName) {
-  SDL_Surface *image = IMG_Load(fileName.c_str());
-  if (!image)
-  {
-     printf("IMG_Load: %s\n", IMG_GetError());
-     return 0;
-  }
-  int result = image->w;
+void load_textures(context *ctx, const string& file_path) {
+    for (int i = 0; i < BlockType::COUNT; i++) {
+        auto block_type = (BlockType) i;
+        auto map_entry = Block::block_to_file_name.find(block_type);
+        auto file_name = map_entry->second;
 
-  // Apparently emcc is unhappy without this cast, but gcc is cool with it
-  ctx->dest = (struct SDL_Rect) {.x = 200, .y = 100, .w = 200, .h = 200};
-  ctx->owl_tex = SDL_CreateTextureFromSurface(ctx->renderer, image);
-  ctx->dest.w = image->w;
-  ctx->dest.h = image->h;
+        SDL_Surface *image = IMG_Load((file_path + file_name).c_str());
+        if (!image) {
+            printf("IMG_Load: %s\n", IMG_GetError());
+            continue;
+        }
+        auto texture = SDL_CreateTextureFromSurface(ctx->renderer, image);
+        ctx->block_textures.emplace(block_type, texture);
 
-  SDL_RenderCopy(ctx->renderer, ctx->owl_tex, nullptr, &ctx->dest);
-
-  SDL_FreeSurface (image);
-
-  return result;
+        SDL_FreeSurface (image);
+    }
 }
 
 void process_keypress(SDL_Event event, GameCursor *cursor) {
     switch (event.key.keysym.sym)
-        {
-            case SDLK_UP:
-                cursor->move(UP); break;
-            case SDLK_DOWN:
-                cursor->move(DOWN); break;
-            case SDLK_LEFT:
-                cursor->move(LEFT); break;
-            case SDLK_RIGHT:
-                cursor->move(RIGHT); break;
-            default:
-                break;
-        }
+    {
+        case SDLK_UP:
+            cursor->move(UP); break;
+        case SDLK_DOWN:
+            cursor->move(DOWN); break;
+        case SDLK_LEFT:
+            cursor->move(LEFT); break;
+        case SDLK_RIGHT:
+            cursor->move(RIGHT); break;
+        default:
+            break;
+    }
 }
 
 void process_input(context *ctx) {
@@ -100,11 +92,20 @@ void loop_fn(void* arg) {
 
     process_input(ctx);
 
-    ctx->dest.x = 200 + ctx->game_cursor.get_x();
-    ctx->dest.y = 100 + ctx->game_cursor.get_y();
-
     SDL_RenderClear(ctx->renderer);
-    SDL_RenderCopy(ctx->renderer, ctx->owl_tex, nullptr, &ctx->dest);
+
+    for (const auto& block_row : ctx->game_grid.blocks) {
+        for (auto block : block_row) {
+            SDL_Rect rect = {
+                    .x = block.get_grid_x() * Block::BLOCK_SIZE * scaling,
+                    .y = block.get_grid_y() * Block::BLOCK_SIZE * scaling,
+                    .w = Block::BLOCK_SIZE * scaling,
+                    .h = Block::BLOCK_SIZE * scaling
+            };
+
+            SDL_RenderCopy(ctx->renderer, ctx->block_textures[block.get_block_type()], nullptr, &rect);
+        }
+    }
     SDL_RenderPresent(ctx->renderer);
 
 #ifdef __EMSCRIPTEN__
@@ -116,44 +117,39 @@ void loop_fn(void* arg) {
 
 int main()
 {
-  SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO);
 
-  SDL_Window *window;
+    SDL_Window *window;
 
-  struct context ctx;
-  ctx.dest.x = 200;
-  ctx.dest.y = 100;
+    struct context ctx;
 
-  SDL_CreateWindowAndRenderer(600, 400, 0, &window, &ctx.renderer);
+    SDL_CreateWindowAndRenderer(500, 600, 0, &window, &ctx.renderer);
 
-  // Set up a white background
-  SDL_SetRenderDrawColor(ctx.renderer, 255, 255, 255, 255);
-  SDL_RenderClear(ctx.renderer);
+    // Set up a white background
+    SDL_SetRenderDrawColor(ctx.renderer, 255, 255, 255, 255);
+    SDL_RenderClear(ctx.renderer);
 
-  ctx.game_cursor = GameCursor();
+    ctx.game_cursor = GameCursor();
 
-  // Load and copy the test image to the renderer
-  testImage(&ctx, pathPrefix + "assets/images/owl.png");
+    load_textures(&ctx, pathPrefix + "assets/images/");
 
-  // Show what is in the renderer
-  SDL_RenderPresent(ctx.renderer);
-
-  printf("you should see an image.\n");
+    // Show what is in the renderer
+    SDL_RenderPresent(ctx.renderer);
 
 #ifdef __EMSCRIPTEN__
-  // If using emscripten, have our main loop be browser friendly
+    // If using emscripten, have our main loop be browser friendly
   emscripten_set_main_loop_arg(loop_fn, &ctx, -1, 1);
   return 0;
 #endif
 
 #ifndef __EMSCRIPTEN__
-  // Otherwise, do a janky normal loop
-  while (ctx.loop_forever) {
-      loop_fn(&ctx);
-      std::this_thread::sleep_for(std::chrono::milliseconds(16));
-  }
+    // Otherwise, do a janky normal loop
+    while (ctx.loop_forever) {
+        loop_fn(&ctx);
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
 #endif
 
-  return 0;
+    return 0;
 }
 

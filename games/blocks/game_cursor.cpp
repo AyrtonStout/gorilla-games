@@ -42,6 +42,8 @@ bool GameCursor::move(Direction direction) {
                 m_x++;
             }
             break;
+        default:
+            break;
     }
     return false;
 }

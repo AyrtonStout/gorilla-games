@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 #    set(CMAKE_C_COMPILER "emcc")
 #endif ()
 
-add_executable(${PROJECT_NAME} hello_owl.cpp game_cursor.cpp game_cursor.h direction.h)
+add_executable(${PROJECT_NAME} hello_owl.cpp game_cursor.cpp game_cursor.h direction.h block.cpp block.h game_grid.cpp game_grid.h)
 
 INCLUDE(FindPkgConfig)
 
