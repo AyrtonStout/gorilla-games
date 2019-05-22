@@ -9,6 +9,8 @@ public:
     int get_y();
     bool move(Direction direction);
     GameCursor();
+    static const int CURSOR_WIDTH = 36;
+    static const int CURSOR_HEIGHT = 20;
 
 private:
     int m_x;

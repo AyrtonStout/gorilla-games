@@ -31,6 +31,7 @@ struct context
 {
     SDL_Renderer *renderer;
     map<BlockType, SDL_Texture*> block_textures;
+    SDL_Texture *cursor_texture;
 
     GameCursor game_cursor;
     GameGrid game_grid;
@@ -38,6 +39,14 @@ struct context
 };
 
 void load_textures(context *ctx, const string& file_path) {
+    SDL_Surface *cursor_image = IMG_Load((file_path + "cursor.png").c_str());
+    if (!cursor_image) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+        return;
+    }
+    ctx->cursor_texture = SDL_CreateTextureFromSurface(ctx->renderer, cursor_image);
+    SDL_FreeSurface(cursor_image);
+
     for (int i = 0; i < BlockType::COUNT; i++) {
         auto block_type = (BlockType) i;
         auto map_entry = Block::block_to_file_name.find(block_type);
@@ -51,7 +60,7 @@ void load_textures(context *ctx, const string& file_path) {
         auto texture = SDL_CreateTextureFromSurface(ctx->renderer, image);
         ctx->block_textures.emplace(block_type, texture);
 
-        SDL_FreeSurface (image);
+        SDL_FreeSurface(image);
     }
 }
 
@@ -106,6 +115,15 @@ void loop_fn(void* arg) {
             SDL_RenderCopy(ctx->renderer, ctx->block_textures[block.get_block_type()], nullptr, &rect);
         }
     }
+
+    SDL_Rect cursor_rect = {
+            .x = ctx->game_cursor.get_x() * Block::BLOCK_SIZE * scaling - 7,
+            .y = ctx->game_cursor.get_y() * Block::BLOCK_SIZE * scaling - 7,
+            .w = GameCursor::CURSOR_WIDTH * scaling,
+            .h = GameCursor::CURSOR_HEIGHT * scaling
+    };
+
+    SDL_RenderCopy(ctx->renderer, ctx->cursor_texture, nullptr, &cursor_rect);
     SDL_RenderPresent(ctx->renderer);
 
 #ifdef __EMSCRIPTEN__
