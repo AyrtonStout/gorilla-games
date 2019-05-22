@@ -64,7 +64,9 @@ void load_textures(context *ctx, const string& file_path) {
     }
 }
 
-void process_keypress(SDL_Event event, GameCursor *cursor) {
+void process_keypress(SDL_Event event, context *ctx) {
+    auto cursor = &ctx->game_cursor;
+
     switch (event.key.keysym.sym)
     {
         case SDLK_UP:
@@ -75,6 +77,8 @@ void process_keypress(SDL_Event event, GameCursor *cursor) {
             cursor->move(LEFT); break;
         case SDLK_RIGHT:
             cursor->move(RIGHT); break;
+        case SDLK_z:
+            ctx->game_grid.swap_panels(cursor->get_x(), cursor->get_y()); break;
         default:
             break;
     }
@@ -87,11 +91,13 @@ void process_input(context *ctx) {
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_KEYDOWN:
-                process_keypress(event, &ctx->game_cursor); break;
+                process_keypress(event, ctx);
+                break;
             case SDL_WINDOWEVENT:
                 if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
                     ctx->loop_forever = false;
                 }
+                break;
         }
     }
 }
@@ -103,16 +109,23 @@ void loop_fn(void* arg) {
 
     SDL_RenderClear(ctx->renderer);
 
-    for (const auto& block_row : ctx->game_grid.blocks) {
-        for (auto block : block_row) {
+    for (int y = 0; y < ctx->game_grid.blocks.size(); y++) {
+        for (int x = 0; x < ctx->game_grid.blocks[0].size(); x++) {
             SDL_Rect rect = {
-                    .x = block.get_grid_x() * Block::BLOCK_SIZE * scaling,
-                    .y = block.get_grid_y() * Block::BLOCK_SIZE * scaling,
+                    .x = x * Block::BLOCK_SIZE * scaling,
+                    .y = y * Block::BLOCK_SIZE * scaling,
                     .w = Block::BLOCK_SIZE * scaling,
                     .h = Block::BLOCK_SIZE * scaling
             };
 
-            SDL_RenderCopy(ctx->renderer, ctx->block_textures[block.get_block_type()], nullptr, &rect);
+            BlockType block_type = ctx->game_grid.blocks[y][x].get_block_type();
+
+            SDL_RenderCopy(ctx->renderer, ctx->block_textures[block_type], nullptr, &rect);
+        }
+    }
+    for (const auto& block_row : ctx->game_grid.blocks) {
+        for (auto block : block_row) {
+
         }
     }
 

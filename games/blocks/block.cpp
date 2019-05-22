@@ -14,14 +14,6 @@ const map<BlockType, string> Block::block_to_file_name = {
         { RED, "red-block.png" }
 };
 
-int Block::get_grid_x() {
-    return grid_x;
-}
-
-int Block::get_grid_y() {
-    return grid_y;
-}
-
 BlockType Block::get_block_type() {
     return block_type;
 }
@@ -39,9 +31,7 @@ bool Block::start_move(Direction p_direction) {
     return false;
 }
 
-Block::Block(int grid_x, int grid_y) {
-    this->grid_x = grid_x;
-    this->grid_y = grid_y;
+Block::Block() {
     this->render_offset_x = 0;
     this->render_offset_y = 0;
     this->direction = NONE;

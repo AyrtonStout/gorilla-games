@@ -1,13 +1,16 @@
+#include <iostream>
 #include "game_grid.h"
 
-const int GRID_WIDTH = 6;
-const int GRID_HEIGHT = 12;
 
 GameGrid::GameGrid() {
-    for (int y = 0; y < GRID_HEIGHT; y++) {
+    for (int y = 0; y < GameGrid::GAME_HEIGHT; y++) {
         blocks.emplace_back();
-        for (int x = 0; x < GRID_WIDTH; x++) {
-            blocks[y].emplace_back(x, y);
+        for (int x = 0; x < GameGrid::GAME_WIDTH; x++) {
+            blocks[y].emplace_back();
         }
     }
+}
+
+void GameGrid::swap_panels(int x, int y) {
+    swap(blocks[y][x], blocks[y][x + 1]);
 }

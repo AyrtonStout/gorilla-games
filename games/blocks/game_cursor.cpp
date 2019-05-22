@@ -1,5 +1,6 @@
 #include <iostream>
 #include "game_cursor.h"
+#include "game_grid.h"
 
 using namespace std;
 
@@ -16,9 +17,6 @@ int GameCursor::get_y() {
     return m_y;
 }
 
-const int GAME_HEIGHT = 12;
-const int GAME_WIDTH = 6;
-
 bool GameCursor::move(Direction direction) {
     switch (direction) {
         case UP:
@@ -27,7 +25,7 @@ bool GameCursor::move(Direction direction) {
             }
             break;
         case DOWN:
-            if (m_y + 1 < GAME_HEIGHT) {
+            if (m_y + 1 < GameGrid::GAME_HEIGHT) {
                 m_y++;
             }
             break;
@@ -38,7 +36,7 @@ bool GameCursor::move(Direction direction) {
             break;
         case RIGHT:
             // Cursor is 2 blocks wide, so need a -1 here to account for it
-            if (m_x + 1 < GAME_WIDTH - 1) {
+            if (m_x + 1 < GameGrid::GAME_WIDTH - 1) {
                 m_x++;
             }
             break;
