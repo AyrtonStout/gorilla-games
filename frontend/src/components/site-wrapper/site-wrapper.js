@@ -1,12 +1,13 @@
 import React from 'react';
 import {Slide, toast, ToastContainer} from "react-toastify";
 import {Api} from "../../services/api";
+import {TetrisContainer} from "../tetris-container/tetris-container";
 
 export class SiteWrapper extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state= {
+		this.state = {
 			version: null
 		}
 	}
@@ -26,6 +27,7 @@ export class SiteWrapper extends React.Component {
 				<div>
 					{this.state.version}
 				</div>
+				<TetrisContainer/>
 			</div>
 		)
 	}
