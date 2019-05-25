@@ -2,8 +2,15 @@
 #define HELLO_GAME_STATE_H
 
 
-class GameState {
+#include "game_cursor.h"
+#include "game_grid.h"
 
+class GameState {
+public:
+    GameCursor game_cursor;
+    GameGrid game_grid;
+
+    GameState();
 };
 
 
