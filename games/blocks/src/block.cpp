@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "cert-err58-cpp"
 #include <cstdlib>
 #include <random>
 #include "block.h"
@@ -37,3 +40,5 @@ Block::Block() {
     this->direction = NONE;
     this->block_type = (BlockType) (generator() % BlockType::COUNT);
 }
+
+#pragma clang diagnostic pop
