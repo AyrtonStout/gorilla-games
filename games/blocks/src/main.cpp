@@ -13,10 +13,23 @@
 
 GameState state;
 
+#ifdef __EMSCRIPTEN__
+    EM_JS(void, test_js, (), {
+        Module.print('Hello from javascript!\n');
+    })
+
+ auto script = R"(Module.print('Hello from javascript!\n'))";
+#endif
+
 int main() {
     state = GameState();
 
     Sdl2Runner(&state).run();
+
+#ifdef __EMSCRIPTEN__
+    test_js();
+    emscripten_run_script(script);
+#endif
 
     return 0;
 }
