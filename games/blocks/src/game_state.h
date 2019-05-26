@@ -9,6 +9,7 @@ class GameState {
 public:
     GameCursor game_cursor;
     GameGrid game_grid;
+    int seed;
 
     GameState();
 };

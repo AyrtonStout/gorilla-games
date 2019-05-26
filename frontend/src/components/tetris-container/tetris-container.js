@@ -3,6 +3,10 @@ import React from 'react';
 export class TetrisContainer extends React.Component {
 	constructor(props) {
 		super(props);
+
+		this.state = {
+			gameModule: undefined
+		}
 	}
 
 	getModuleProperties() {
@@ -28,7 +32,12 @@ export class TetrisContainer extends React.Component {
 
 		document.head.appendChild(script);
 		script.onload = () => {
-			Module(this.getModuleProperties());
+			Module(this.getModuleProperties()).then((gameModule) => {
+			    this.setState({ gameModule: gameModule });
+
+			    // Example of setting the seed for the game, though naturally won't work exactly like this forever
+				gameModule.set_seed(50);
+			});
 		};
 		script.onerror = () => {
 		    document.getElementById("blocks-status").innerHTML = "Failed to load Blocks. Did it get compiled?";

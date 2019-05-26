@@ -148,11 +148,6 @@ void Sdl2Runner::update() {
             SDL_RenderCopy(renderer, block_textures[block_type], nullptr, &rect);
         }
     }
-    for (const auto& block_row : game_state->game_grid.blocks) {
-        for (auto block : block_row) {
-
-        }
-    }
 
     SDL_Rect cursor_rect = {
             .x = game_state->game_cursor.get_x() * Block::BLOCK_SIZE * SCALING - 7,
