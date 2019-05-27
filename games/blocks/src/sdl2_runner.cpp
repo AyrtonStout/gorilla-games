@@ -74,10 +74,11 @@ void Sdl2Runner::load_textures() {
     cursor_texture = SDL_CreateTextureFromSurface(renderer, cursor_image);
     SDL_FreeSurface(cursor_image);
 
+    // Normal block images
     for (int i = 0; i < BlockType::COUNT; i++) {
         auto block_type = (BlockType) i;
         auto map_entry = Block::block_to_file_name.find(block_type);
-        auto file_name = map_entry->second;
+        auto file_name = map_entry->second + ".png";
 
         SDL_Surface *image = IMG_Load((file_path + file_name).c_str());
         if (!image) {
@@ -86,6 +87,23 @@ void Sdl2Runner::load_textures() {
         }
         auto texture = SDL_CreateTextureFromSurface(renderer, image);
         block_textures.emplace(block_type, texture);
+
+        SDL_FreeSurface(image);
+    }
+
+    // Flashing block images
+    for (int i = 0; i < BlockType::COUNT; i++) {
+        auto block_type = (BlockType) i;
+        auto map_entry = Block::block_to_file_name.find(block_type);
+        auto file_name = map_entry->second + "-flash.png";
+
+        SDL_Surface *image = IMG_Load((file_path + file_name).c_str());
+        if (!image) {
+            printf("IMG_Load: %s\n", IMG_GetError());
+            continue;
+        }
+        auto texture = SDL_CreateTextureFromSurface(renderer, image);
+        block_flash_textures.emplace(block_type, texture);
 
         SDL_FreeSurface(image);
     }
@@ -152,8 +170,9 @@ void Sdl2Runner::update() {
             };
 
             BlockType block_type = block->get_block_type();
+            auto texture = block->block_action == BlockAction::FLASHING_1 ? block_flash_textures[block_type] : block_textures[block_type];
 
-            SDL_RenderCopy(renderer, block_textures[block_type], nullptr, &rect);
+            SDL_RenderCopy(renderer, texture, nullptr, &rect);
         }
     }
 

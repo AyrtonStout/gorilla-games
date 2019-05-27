@@ -15,6 +15,7 @@ public:
 private:
     SDL_Renderer *renderer;
     map<BlockType, SDL_Texture*> block_textures;
+    map<BlockType, SDL_Texture*> block_flash_textures;
     SDL_Texture *cursor_texture;
     GameState *game_state;
     bool running = true;

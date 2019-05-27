@@ -4,7 +4,6 @@
 #include "game_grid.h"
 
 GameGrid::GameGrid() {
-    // TODO I think I was wrong to do this. I should make this be an array of pointers instead
     for (int y = 0; y < GameGrid::GAME_HEIGHT; y++) {
         blocks.emplace_back();
         for (int x = 0; x < GameGrid::GAME_WIDTH; x++) {
@@ -15,14 +14,21 @@ GameGrid::GameGrid() {
 }
 
 void GameGrid::swap_panels(int x, int y) {
-    blocks[y][x]->transition_to_state(BlockAction::SLIDE_RIGHT);
-    blocks[y][x + 1]->transition_to_state(BlockAction::SLIDE_LEFT);
+    auto left_block = blocks[y][x];
+    auto right_block = blocks[y][x + 1];
 
-    active_block left_block = { .block = blocks[y][x], .block_action = BlockAction::SLIDE_RIGHT, .x = x, .y = y };
-    active_block right_block = { .block = blocks[y][x + 1], .block_action = BlockAction::SLIDE_LEFT, .x = x + 1, .y = y };
+    if (left_block->block_action != BlockAction::NONE || right_block->block_action != BlockAction::NONE) {
+        return;
+    }
 
-    active_blocks.push_back(left_block);
-    active_blocks.push_back(right_block);
+    left_block->transition_to_state(BlockAction::SLIDE_RIGHT);
+    right_block->transition_to_state(BlockAction::SLIDE_LEFT);
+
+    active_block left_active_block = { .block = left_block, .block_action = BlockAction::SLIDE_RIGHT, .x = x, .y = y };
+    active_block right_active_block = { .block = right_block, .block_action = BlockAction::SLIDE_LEFT, .x = x + 1, .y = y };
+
+    active_blocks.push_back(left_active_block);
+    active_blocks.push_back(right_active_block);
 
     check_for_matches();
 }
@@ -93,12 +99,15 @@ void GameGrid::check_for_matches() {
         }
     }
 
-    for (auto popping_block : popping_blocks) {
-//        blocks[popping_block.y][popping_block.x].block_action = BlockAction::FLASHING_1;
+    for (const auto& popping_block : popping_blocks) {
+        popping_block.block->transition_to_state(BlockAction::FLASHING_1);
+        active_blocks.push_back(popping_block);
     }
 }
 
 void GameGrid::update() {
+    bool match_check_needed = false;
+
     for (int i = 0; i < active_blocks.size(); i++) {
 
         int x = active_blocks[i].x;
@@ -111,13 +120,16 @@ void GameGrid::update() {
             // Don't check for SLIDE_LEFT, as we only need to do the swap for one completed block
             // Empty blocks still count as blocks, so there will always be a SLIDE_LEFT and SLIDE_RIGHT
             if (active_blocks[i].block_action == BlockAction::SLIDE_RIGHT) {
-                // FIXME this is stupid and I am always assuming that the next block is right after this one
                 swap(blocks[y][x], blocks[y][x + 1]);
+                match_check_needed = true;
             }
 
-            active_blocks[i].block->last_block_action = BlockAction::NONE;
             active_blocks.erase(active_blocks.begin() + i); // Delete both this and the next block...
             i--;
         }
+    }
+
+    if (match_check_needed) {
+        check_for_matches();
     }
 }

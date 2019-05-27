@@ -13,12 +13,12 @@ static std::default_random_engine generator(r());
 int Block::next_block_id; // Required to 0-initialize the non-const static variable
 
 const map<BlockType, string> Block::block_to_file_name = {
-        { L_BLUE, "lblue-block.png" },
-        { D_BLUE, "dblue-block.png" },
-        { YELLOW, "yellow-block.png" },
-        { GREEN, "green-block.png" },
-        { PURPLE, "purple-block.png" },
-        { RED, "red-block.png" }
+        { L_BLUE, "lblue-block" },
+        { D_BLUE, "dblue-block" },
+        { YELLOW, "yellow-block" },
+        { GREEN, "green-block" },
+        { PURPLE, "purple-block" },
+        { RED, "red-block" }
 };
 
 BlockType Block::get_block_type() {
@@ -51,21 +51,19 @@ void Block::transition_to_state(BlockAction action) {
     block_action = action;
     if (action == BlockAction::SLIDE_LEFT || action == BlockAction::SLIDE_RIGHT) {
         action_frames_remaining = FRAMES_TO_SLIDE;
+    } else if (action == BlockAction::FLASHING_1) {
+        action_frames_remaining = FRAMES_OF_LIGHT;
     }
 }
 
 void Block::update() {
-    cout << "Updating block with ID: " << get_id() << ". actions remaining: " << action_frames_remaining << " Action Type: " << (int) block_action << "\n";
     switch (block_action) {
         case BlockAction::NONE: {
-            cout << "No action. Not updating\n";
             return;
         }
         case BlockAction::SLIDE_LEFT:
         case BlockAction::SLIDE_RIGHT: {
             if (action_frames_remaining == 0) {
-                cout << "No action frames remaining\n";
-                last_block_action = block_action;
                 block_action = BlockAction::NONE;
                 render_offset_x = 0;
                 return;

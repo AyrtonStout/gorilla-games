@@ -18,7 +18,6 @@ public:
 
     BlockType get_block_type();
     BlockAction block_action;
-    BlockAction last_block_action;
     int get_id();
     int get_render_offset_x();
     int get_render_offset_y();
