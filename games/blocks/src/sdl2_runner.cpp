@@ -136,6 +136,9 @@ void Sdl2Runner::update() {
 
     for (int y = 0; y < game_state->game_grid.blocks.size(); y++) {
         for (int x = 0; x < game_state->game_grid.blocks[0].size(); x++) {
+            if (game_state->game_grid.blocks[y][x].deleted) {
+                continue;
+            }
             SDL_Rect rect = {
                     .x = x * Block::BLOCK_SIZE * SCALING,
                     .y = y * Block::BLOCK_SIZE * SCALING,

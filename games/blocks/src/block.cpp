@@ -8,6 +8,8 @@
 std::random_device r;
 static std::default_random_engine generator(r());
 
+int Block::next_block_id; // Required to 0-initialize the non-const static variable
+
 const map<BlockType, string> Block::block_to_file_name = {
         { L_BLUE, "lblue-block.png" },
         { D_BLUE, "dblue-block.png" },
@@ -39,6 +41,12 @@ Block::Block() {
     this->render_offset_y = 0;
     this->direction = NONE;
     this->block_type = (BlockType) (generator() % BlockType::COUNT);
+
+    id = ++Block::next_block_id;
+}
+
+int Block::get_id() {
+    return id;
 }
 
 #pragma clang diagnostic pop

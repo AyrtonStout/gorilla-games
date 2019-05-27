@@ -14,7 +14,9 @@ public:
     vector<vector<Block>> blocks;
     static const int GAME_HEIGHT = 12;
     static const int GAME_WIDTH = 6;
+
 private:
+    void check_for_matches();
 };
 
 
