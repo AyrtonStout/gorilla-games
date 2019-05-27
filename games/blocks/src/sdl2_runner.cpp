@@ -139,7 +139,7 @@ void Sdl2Runner::update() {
 
     for (int y = 0; y < game_state->game_grid.blocks.size(); y++) {
         for (int x = 0; x < game_state->game_grid.blocks[0].size(); x++) {
-            auto block = &game_state->game_grid.blocks[y][x];
+            auto block = game_state->game_grid.blocks[y][x];
             if (block->deleted) {
                 continue;
             }
