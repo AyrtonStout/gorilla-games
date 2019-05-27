@@ -97,13 +97,13 @@ void Sdl2Runner::process_keypress(SDL_Event event) {
     switch (event.key.keysym.sym)
     {
         case SDLK_UP:
-            cursor->move(UP); break;
+            cursor->move(Direction::UP); break;
         case SDLK_DOWN:
-            cursor->move(DOWN); break;
+            cursor->move(Direction::DOWN); break;
         case SDLK_LEFT:
-            cursor->move(LEFT); break;
+            cursor->move(Direction::LEFT); break;
         case SDLK_RIGHT:
-            cursor->move(RIGHT); break;
+            cursor->move(Direction::RIGHT); break;
         case SDLK_z:
             game_state->game_grid.swap_panels(cursor->get_x(), cursor->get_y()); break;
         default:
@@ -130,23 +130,28 @@ void Sdl2Runner::process_input() {
 }
 
 void Sdl2Runner::update() {
+    // FIXME This shouldn't be the responsibility of SDL to do this update
+    game_state->game_grid.update();
+
     process_input();
 
     SDL_RenderClear(renderer);
 
     for (int y = 0; y < game_state->game_grid.blocks.size(); y++) {
         for (int x = 0; x < game_state->game_grid.blocks[0].size(); x++) {
-            if (game_state->game_grid.blocks[y][x].deleted) {
+            auto block = &game_state->game_grid.blocks[y][x];
+            if (block->deleted) {
                 continue;
             }
+
             SDL_Rect rect = {
-                    .x = x * Block::BLOCK_SIZE * SCALING,
-                    .y = y * Block::BLOCK_SIZE * SCALING,
+                    .x = (x * Block::BLOCK_SIZE + block->get_render_offset_x()) * SCALING,
+                    .y = (y * Block::BLOCK_SIZE + block->get_render_offset_y()) * SCALING,
                     .w = Block::BLOCK_SIZE * SCALING,
                     .h = Block::BLOCK_SIZE * SCALING
             };
 
-            BlockType block_type = game_state->game_grid.blocks[y][x].get_block_type();
+            BlockType block_type = block->get_block_type();
 
             SDL_RenderCopy(renderer, block_textures[block_type], nullptr, &rect);
         }

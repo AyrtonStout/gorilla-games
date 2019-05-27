@@ -19,22 +19,22 @@ int GameCursor::get_y() {
 
 bool GameCursor::move(Direction direction) {
     switch (direction) {
-        case UP:
+        case Direction::UP:
             if (m_y - 1 >= 0) {
                 m_y--;
             }
             break;
-        case DOWN:
+        case Direction::DOWN:
             if (m_y + 1 < GameGrid::GAME_HEIGHT) {
                 m_y++;
             }
             break;
-        case LEFT:
+        case Direction::LEFT:
             if (m_x - 1 >= 0) {
                 m_x--;
             }
             break;
-        case RIGHT:
+        case Direction::RIGHT:
             // Cursor is 2 blocks wide, so need a -1 here to account for it
             if (m_x + 1 < GameGrid::GAME_WIDTH - 1) {
                 m_x++;

@@ -7,15 +7,26 @@
 
 using namespace std;
 
+struct active_block {
+    Block *block;
+    BlockAction block_action;
+    int x;
+    int y;
+};
+
 class GameGrid {
 public:
     GameGrid();
-    void swap_panels(int x, int y);
     vector<vector<Block>> blocks;
     static const int GAME_HEIGHT = 12;
     static const int GAME_WIDTH = 6;
 
+    void swap_panels(int x, int y);
+    void update();
+
 private:
+    vector<active_block> active_blocks;
+
     void check_for_matches();
 };
 

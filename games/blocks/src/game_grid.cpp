@@ -3,8 +3,8 @@
 #include "direction.h"
 #include "game_grid.h"
 
-
 GameGrid::GameGrid() {
+    // TODO I think I was wrong to do this. I should make this be an array of pointers instead
     for (int y = 0; y < GameGrid::GAME_HEIGHT; y++) {
         blocks.emplace_back();
         for (int x = 0; x < GameGrid::GAME_WIDTH; x++) {
@@ -14,34 +14,36 @@ GameGrid::GameGrid() {
 }
 
 void GameGrid::swap_panels(int x, int y) {
-    swap(blocks[y][x], blocks[y][x + 1]);
+    blocks[y][x].transition_to_state(BlockAction::SLIDE_RIGHT);
+    blocks[y][x + 1].transition_to_state(BlockAction::SLIDE_LEFT);
+
+    active_block left_block = { .block = &blocks[y][x], .block_action = BlockAction::SLIDE_RIGHT, .x = x, .y = y };
+    active_block right_block = { .block = &blocks[y][x + 1], .block_action = BlockAction::SLIDE_LEFT, .x = x + 1, .y = y };
+
+    active_blocks.push_back(left_block);
+    active_blocks.push_back(right_block);
+
 
     check_for_matches();
 }
 
-struct popping_block {
-    Block *block;
-    int x;
-    int y;
-};
-
-vector<popping_block> check_direction(vector<vector<Block>> &blocks, int x, int y, Direction direction) {
+vector<active_block> check_direction(vector<vector<Block>> &blocks, int x, int y, Direction direction) {
     int dx = 0, dy = 0;
     switch (direction) {
-        case UP: dy = -1; break;
-        case LEFT: dx = -1; break;
-        case RIGHT: dx = 1; break;
-        case DOWN: dy = -1; break;
+        case Direction::UP: dy = -1; break;
+        case Direction::LEFT: dx = -1; break;
+        case Direction::RIGHT: dx = 1; break;
+        case Direction::DOWN: dy = -1; break;
         default: throw std::invalid_argument("Unsupported direction");
     }
 
     auto current_block = &blocks[y][x];
     if (current_block->deleted) {
-        return vector<popping_block>();
+        return vector<active_block>();
     }
 
-    auto found_blocks = vector<popping_block>();
-    found_blocks.push_back(popping_block { .block = current_block, .x = x, .y = y });
+    auto found_blocks = vector<active_block>();
+    found_blocks.push_back(active_block { .x = x, .y = y });
 
     while (true) {
         x += dx;
@@ -57,7 +59,7 @@ vector<popping_block> check_direction(vector<vector<Block>> &blocks, int x, int 
         }
 
         if (compare_block->get_block_type() == current_block->get_block_type()) {
-            found_blocks.push_back(popping_block { .block = compare_block, .x = x, .y = y });
+            found_blocks.push_back(active_block { .x = x, .y = y });
         } else {
             break;
         }
@@ -66,22 +68,22 @@ vector<popping_block> check_direction(vector<vector<Block>> &blocks, int x, int 
     if (found_blocks.size() > 2) {
         return found_blocks;
     } else {
-        return vector<popping_block>();
+        return vector<active_block>();
     }
 }
 
 void GameGrid::check_for_matches() {
     auto popping_block_ids = unordered_set<int>();
-    auto popping_blocks = vector<popping_block>();
+    auto popping_blocks = vector<active_block>();
 
     for (int y = 0; y < blocks.size(); y++) {
         for (int x = 0; x < blocks[0].size(); x++) {
-            Direction directions[] = { UP, LEFT, DOWN, RIGHT };
+            Direction directions[] = { Direction::UP, Direction::LEFT, Direction::DOWN, Direction::RIGHT };
 
             for (auto direction : directions) {
                 auto found_blocks = check_direction(blocks, x, y, direction);
                 for (auto popping_block : found_blocks) {
-                    int block_id = popping_block.block->get_id();
+                    int block_id = blocks[popping_block.y][popping_block.x].get_id();
                     if (popping_block_ids.count(block_id) == 0) {
                         popping_block_ids.insert(block_id);
                         popping_blocks.push_back(popping_block);
@@ -92,6 +94,32 @@ void GameGrid::check_for_matches() {
     }
 
     for (auto popping_block : popping_blocks) {
-        blocks[popping_block.y][popping_block.x].deleted = true;
+//        blocks[popping_block.y][popping_block.x].block_action = BlockAction::FLASHING_1;
+    }
+}
+
+void GameGrid::update() {
+    for (int i = 0; i < active_blocks.size(); i++) {
+
+        int x = active_blocks[i].x;
+        int y = active_blocks[i].y;
+        active_blocks[i].block->update();
+
+        if (active_blocks[i].block->block_action == BlockAction::NONE) {
+
+            // The block finished sliding to its new location. Swap it with the block next to it
+            // Don't check for SLIDE_LEFT, as we only need to do the swap for one completed block
+            // Empty blocks still count as blocks, so there will always be a SLIDE_LEFT and SLIDE_RIGHT
+            if (active_blocks[i].block_action == BlockAction::SLIDE_RIGHT) {
+                // FIXME this is stupid and I am always assuming that the next block is right after this one
+                active_blocks[i + 1].block->update();
+
+                swap(blocks[y][x], blocks[y][x + 1]);
+            }
+
+            blocks[y][x].last_block_action = BlockAction::NONE;
+            active_blocks.erase(active_blocks.begin() + i, active_blocks.begin() + i + 2); // Delete both this and the next block...
+            i -= 2;
+        }
     }
 }
