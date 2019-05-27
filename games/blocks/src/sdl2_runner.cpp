@@ -170,7 +170,12 @@ void Sdl2Runner::update() {
             };
 
             BlockType block_type = block->get_block_type();
-            auto texture = block->block_action == BlockAction::FLASHING_1 ? block_flash_textures[block_type] : block_textures[block_type];
+            SDL_Texture *texture;
+            if (block->block_action == BlockAction::FLASHING_1 && block->is_even_action_frame()) {
+                texture = block_flash_textures[block_type];
+            } else {
+                texture = block_textures[block_type];
+            }
 
             SDL_RenderCopy(renderer, texture, nullptr, &rect);
         }

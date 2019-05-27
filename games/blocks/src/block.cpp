@@ -75,12 +75,24 @@ void Block::update() {
             } else {
                 render_offset_x += distance;
             }
+
+            break;
+        }
+        case BlockAction::FLASHING_1: {
+            if (action_frames_remaining == 0) {
+                deleted = true;
+                block_action = BlockAction::NONE;
+            }
         }
     }
 
     if (block_action != BlockAction::NONE) {
         action_frames_remaining--;
     }
+}
+
+bool Block::is_even_action_frame() {
+    return action_frames_remaining % 2 == 0;
 }
 
 #pragma clang diagnostic pop
