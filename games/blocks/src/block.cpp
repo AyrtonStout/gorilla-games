@@ -83,6 +83,7 @@ void Block::update() {
                 deleted = true;
                 block_action = BlockAction::NONE;
             }
+            break;
         }
     }
 
@@ -91,8 +92,8 @@ void Block::update() {
     }
 }
 
-bool Block::is_even_action_frame() {
-    return action_frames_remaining % 2 == 0;
+int Block::get_action_frames_remaining() {
+    return action_frames_remaining;
 }
 
 #pragma clang diagnostic pop

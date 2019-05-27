@@ -1,5 +1,6 @@
 #include <SDL_image.h>
 #include <thread>
+#include <iostream>
 #include "sdl2_runner.h"
 
 #ifdef __EMSCRIPTEN__
@@ -171,8 +172,13 @@ void Sdl2Runner::update() {
 
             BlockType block_type = block->get_block_type();
             SDL_Texture *texture;
-            if (block->block_action == BlockAction::FLASHING_1 && block->is_even_action_frame()) {
-                texture = block_flash_textures[block_type];
+            if (block->block_action == BlockAction::FLASHING_1) {
+                int frame = block->get_action_frames_remaining();
+                if (frame % 4 == 0 || frame % 4 == 1) {
+                    texture = block_flash_textures[block_type];
+                } else {
+                    texture = block_textures[block_type];
+                }
             } else {
                 texture = block_textures[block_type];
             }

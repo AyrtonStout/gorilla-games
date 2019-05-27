@@ -21,7 +21,7 @@ public:
     int get_id();
     int get_render_offset_x();
     int get_render_offset_y();
-    bool is_even_action_frame();
+    int get_action_frames_remaining();
     void transition_to_state(BlockAction action);
     void update();
 
