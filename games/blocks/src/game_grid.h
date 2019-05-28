@@ -10,7 +10,6 @@ using namespace std;
 
 struct active_block {
     shared_ptr<Block> block;
-    BlockAction block_action;
     int x;
     int y;
 };

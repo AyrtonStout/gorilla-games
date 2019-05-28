@@ -41,6 +41,7 @@ Block::Block() {
     id = ++Block::next_block_id;
     block_action = BlockAction::NONE;
     action_frames_remaining = 0;
+    action_done = false;
 }
 
 int Block::get_id() {
@@ -49,15 +50,21 @@ int Block::get_id() {
 
 void Block::transition_to_state(BlockAction action) {
     block_action = action;
+    action_done = false;
     if (action == BlockAction::SLIDE_LEFT || action == BlockAction::SLIDE_RIGHT) {
         action_frames_remaining = FRAMES_TO_SLIDE;
     } else if (action == BlockAction::FLASHING_1) {
         action_frames_remaining = FRAMES_OF_LIGHT;
-    } else if (action == BlockAction::FLOATING) {
+    } else if (action == BlockAction::SLIDE_FLOAT) {
+        block_action = BlockAction::FLOATING;
         action_frames_remaining = FRAMES_TO_START_FALLING;
+    } else if (action == BlockAction::POP_FLOAT) {
+        block_action = BlockAction::FLOATING;
+        action_frames_remaining = FRAME_POP_DROP_DELAY;
     } else if (action == BlockAction::FALLING) {
         action_frames_remaining = FRAMES_TO_FALL;
     }
+
 }
 
 void Block::update() {
@@ -65,14 +72,14 @@ void Block::update() {
         action_frames_remaining--;
     }
 
+    if (action_frames_remaining == 0) {
+        action_done = true;
+    }
+
     switch (block_action) {
-        case BlockAction::NONE: {
-            return;
-        }
         case BlockAction::SLIDE_LEFT:
         case BlockAction::SLIDE_RIGHT: {
-            if (action_frames_remaining == 0) {
-                block_action = BlockAction::NONE;
+            if (action_done) {
                 render_offset_x = 0;
                 return;
             }
@@ -87,16 +94,12 @@ void Block::update() {
             break;
         }
         case BlockAction::FLASHING_1: {
-            if (action_frames_remaining == 0) {
+            if (action_done) {
                 deleted = true;
-                block_action = BlockAction::NONE;
             }
             return;
         }
         default: {
-            if (action_frames_remaining == 0) {
-                block_action = BlockAction::NONE;
-            }
             return;
         }
     }
@@ -108,6 +111,22 @@ int Block::get_action_frames_remaining() {
 
 bool Block::can_be_matched_with() {
     return !deleted && (block_action == BlockAction::NONE || block_action == BlockAction::FLOATING);
+}
+
+bool Block::can_prevent_falling() {
+    return !deleted && block_action != BlockAction::FALLING;
+}
+
+void Block::complete_action() {
+    // A block might chain multiple actions together (like falling multiple spots) so this might not always be 0
+    if (action_frames_remaining == 0) {
+        block_action = BlockAction::NONE;
+    }
+    action_done = false;
+}
+
+bool Block::is_action_done() {
+    return action_done;
 }
 
 #pragma clang diagnostic pop

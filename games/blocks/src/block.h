@@ -9,7 +9,7 @@ using namespace std;
 
 enum BlockType { L_BLUE, D_BLUE, RED, GREEN, PURPLE, YELLOW, COUNT };
 
-enum class BlockAction { NONE, SLIDE_LEFT, SLIDE_RIGHT, FALLING, FLOATING, FLASHING_1, FLASHING_2, YELLOW, COUNT };
+enum class BlockAction { NONE, SLIDE_LEFT, SLIDE_RIGHT, FALLING, SLIDE_FLOAT, POP_FLOAT, FLOATING, FLASHING_1, FLASHING_2 };
 
 class Block {
 
@@ -22,9 +22,12 @@ public:
     int get_render_offset_x();
     int get_render_offset_y();
     int get_action_frames_remaining();
+    bool is_action_done();
     void transition_to_state(BlockAction action);
+    void complete_action();
     void update();
     bool can_be_matched_with();
+    bool can_prevent_falling();
 
     bool deleted = false;
     static const int BLOCK_SIZE = 16;
@@ -38,6 +41,7 @@ private:
 
     int id;
     int action_frames_remaining;
+    bool action_done;
     static int next_block_id;
 };
 
