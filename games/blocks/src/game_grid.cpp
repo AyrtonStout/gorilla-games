@@ -157,6 +157,16 @@ void GameGrid::update() {
                 current_block->transition_to_state(BlockAction::SLIDE_FLOAT);
                 new_actions.push_back({ .block = current_block, .x = new_x, .y = y });
             }
+
+            for (int y_to_check = y - 1; y_to_check >= 0; y_to_check--) {
+                auto block_to_check = blocks[y_to_check][x];
+                if (block_to_check->deleted || block_to_check->block_action != BlockAction::NONE) {
+                    break;
+                } else {
+                    block_to_check->transition_to_state(BlockAction::POP_FLOAT);
+                    new_actions.push_back({ .block = block_to_check, .x = x, .y = y_to_check });
+                }
+            }
         } else if (action == BlockAction::FLOATING) {
             if (y + 1 < GAME_HEIGHT && !blocks[y + 1][x]->can_prevent_falling()) {
                 current_block->transition_to_state(BlockAction::FALLING);
