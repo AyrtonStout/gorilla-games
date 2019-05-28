@@ -21,6 +21,10 @@ void GameGrid::swap_panels(int x, int y) {
         return;
     }
 
+    if (left_block->deleted && right_block->deleted) {
+        return;
+    }
+
     left_block->transition_to_state(BlockAction::SLIDE_RIGHT);
     right_block->transition_to_state(BlockAction::SLIDE_LEFT);
 
@@ -44,7 +48,7 @@ vector<active_block> GameGrid::check_direction(int x, int y, Direction direction
     }
 
     auto current_block = blocks[y][x];
-    if (current_block->deleted) {
+    if (!current_block->can_be_matched_with()) {
         return vector<active_block>();
     }
 
@@ -60,7 +64,7 @@ vector<active_block> GameGrid::check_direction(int x, int y, Direction direction
         }
 
         auto compare_block = blocks[y][x];
-        if (compare_block->deleted) {
+        if (!compare_block->can_be_matched_with()) {
             break;
         }
 
@@ -88,6 +92,7 @@ void GameGrid::check_for_matches() {
 
             for (auto direction : directions) {
                 auto found_blocks = check_direction(x, y, direction);
+
                 for (const auto& popping_block : found_blocks) {
                     int block_id = popping_block.block->get_id();
                     if (popping_block_ids.count(block_id) == 0) {
@@ -107,29 +112,73 @@ void GameGrid::check_for_matches() {
 
 void GameGrid::update() {
     bool match_check_needed = false;
+    auto new_actions = vector<active_block>();
 
     for (int i = 0; i < active_blocks.size(); i++) {
 
         int x = active_blocks[i].x;
         int y = active_blocks[i].y;
-        active_blocks[i].block->update();
+        auto current_block = active_blocks[i].block;
 
-        if (active_blocks[i].block->block_action == BlockAction::NONE) {
+        current_block->update();
 
+        if (current_block->block_action != BlockAction::NONE) {
+            continue; // This block is still doing an action. Do nothing more with it
+        }
+
+        auto finished_action = active_blocks[i].block_action;
+
+        // We now know that the block is done doing its action. Do some stuff additional based off what kind of action it finished
+        if (finished_action == BlockAction::SLIDE_RIGHT || finished_action == BlockAction::SLIDE_LEFT) {
             // The block finished sliding to its new location. Swap it with the block next to it
             // Don't check for SLIDE_LEFT, as we only need to do the swap for one completed block
             // Empty blocks still count as blocks, so there will always be a SLIDE_LEFT and SLIDE_RIGHT
-            if (active_blocks[i].block_action == BlockAction::SLIDE_RIGHT) {
+            if (finished_action == BlockAction::SLIDE_RIGHT) {
                 swap(blocks[y][x], blocks[y][x + 1]);
                 match_check_needed = true;
             }
 
-            active_blocks.erase(active_blocks.begin() + i); // Delete both this and the next block...
-            i--;
+            // FIXME: Although it won't ever happen right now, this logic expects the SLIDE_RIGHT block to finish before SLIDE_LEFT does
+            // Otherwise, the x coordinate of the SLIDE_LEFT block won't have been updated in the swap
+            // It probably makes sense to have "update groups" for multiple blocks that resolve all at once
+            int new_x = finished_action == BlockAction::SLIDE_RIGHT ? x + 1 : x - 1;
+
+            // Check x + 1 here because we have since swapped positions to the right
+            if (!current_block->deleted &&  y + 1 < GAME_HEIGHT && blocks[y + 1][new_x]->deleted) {
+                // The block slid over a cliff. Add a watcher to make sure it will fall later
+                current_block->transition_to_state(BlockAction::FLOATING);
+                new_actions.push_back({ .block = current_block, .block_action = BlockAction::FLOATING, .x = new_x, .y = y });
+            }
+        } else if (finished_action == BlockAction::FLOATING) {
+            if (y + 1 < GAME_HEIGHT && blocks[y + 1][x]->deleted) {
+                current_block->transition_to_state(BlockAction::FALLING);
+                new_actions.push_back({ .block = current_block, .block_action = BlockAction::FALLING, .x = x, .y = y });
+            }
+
+        } else if (finished_action == BlockAction::FALLING) {
+            if (blocks[y + 1][x]->deleted) {
+                swap(blocks[y][x], blocks[y + 1][x]);
+                match_check_needed = true;
+
+                // Keep falling if there continues to be no blocks below us
+                if (y + 2 < GAME_HEIGHT && blocks[y + 2][x]->deleted) {
+                    current_block->transition_to_state(BlockAction::FALLING);
+                    new_actions.push_back({ .block = current_block, .block_action = BlockAction::FALLING, .x = x, .y = y + 1 });
+                }
+            }
         }
+
+        active_blocks.erase(active_blocks.begin() + i); // Delete both this and the next block...
+        i--;
     }
 
     if (match_check_needed) {
         check_for_matches();
+    }
+
+    // TODO this probably has unintended behavior if a block is floating when it gets matched with other blocks...
+    // Add any new actions so that we keep watch over them
+    for (const auto& new_action : new_actions) {
+        active_blocks.push_back(new_action);
     }
 }

@@ -53,10 +53,18 @@ void Block::transition_to_state(BlockAction action) {
         action_frames_remaining = FRAMES_TO_SLIDE;
     } else if (action == BlockAction::FLASHING_1) {
         action_frames_remaining = FRAMES_OF_LIGHT;
+    } else if (action == BlockAction::FLOATING) {
+        action_frames_remaining = FRAMES_TO_START_FALLING;
+    } else if (action == BlockAction::FALLING) {
+        action_frames_remaining = FRAMES_TO_FALL;
     }
 }
 
 void Block::update() {
+    if (block_action != BlockAction::NONE) {
+        action_frames_remaining--;
+    }
+
     switch (block_action) {
         case BlockAction::NONE: {
             return;
@@ -83,17 +91,23 @@ void Block::update() {
                 deleted = true;
                 block_action = BlockAction::NONE;
             }
-            break;
+            return;
         }
-    }
-
-    if (block_action != BlockAction::NONE) {
-        action_frames_remaining--;
+        default: {
+            if (action_frames_remaining == 0) {
+                block_action = BlockAction::NONE;
+            }
+            return;
+        }
     }
 }
 
 int Block::get_action_frames_remaining() {
     return action_frames_remaining;
+}
+
+bool Block::can_be_matched_with() {
+    return !deleted && (block_action == BlockAction::NONE || block_action == BlockAction::FLOATING);
 }
 
 #pragma clang diagnostic pop
