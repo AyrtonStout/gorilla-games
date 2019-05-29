@@ -106,6 +106,19 @@ void GameGrid::add_active_block(active_block active_block) {
     }
 }
 
+void GameGrid::add_new_falling_blocks(vector<active_block> &new_actions, int x, int y) {
+    // Go up from the moved / popped block, telling every contiguous block above it to get ready to fall
+    for (int y_to_check = y - 1; y_to_check >= 0; y_to_check--) {
+        auto block_to_check = blocks[y_to_check][x];
+        if (block_to_check->deleted || block_to_check->block_action != BlockAction::NONE) {
+            break;
+        } else {
+            block_to_check->transition_to_state(BlockAction::POP_FLOAT);
+            new_actions.push_back({ .block = block_to_check, .x = x, .y = y_to_check });
+        }
+    }
+}
+
 void GameGrid::update() {
     if (active_blocks.size() == 0) {
         return;
@@ -154,15 +167,7 @@ void GameGrid::update() {
                 new_actions.push_back({ .block = current_block, .x = new_x, .y = y });
             }
 
-            for (int y_to_check = y - 1; y_to_check >= 0; y_to_check--) {
-                auto block_to_check = blocks[y_to_check][x];
-                if (block_to_check->deleted || block_to_check->block_action != BlockAction::NONE) {
-                    break;
-                } else {
-                    block_to_check->transition_to_state(BlockAction::POP_FLOAT);
-                    new_actions.push_back({ .block = block_to_check, .x = x, .y = y_to_check });
-                }
-            }
+            add_new_falling_blocks(new_actions, x, y);
         } else if (action == BlockAction::FLOATING) {
             if (y + 1 < GAME_HEIGHT && !blocks[y + 1][x]->can_prevent_falling()) {
                 current_block->transition_to_state(BlockAction::FALLING);
@@ -181,16 +186,7 @@ void GameGrid::update() {
                 }
             }
         } else if (action == BlockAction::FLASHING_1) {
-            // Go up from the popped block, telling every contiguous block above it to get ready to fall
-            for (int y_to_check = y - 1; y_to_check >= 0; y_to_check--) {
-                auto block_to_check = blocks[y_to_check][x];
-                if (block_to_check->deleted || block_to_check->block_action != BlockAction::NONE) {
-                    break;
-                } else {
-                    block_to_check->transition_to_state(BlockAction::POP_FLOAT);
-                    new_actions.push_back({ .block = block_to_check, .x = x, .y = y_to_check });
-                }
-            }
+            add_new_falling_blocks(new_actions, x, y);
         }
 
         current_block->complete_action();

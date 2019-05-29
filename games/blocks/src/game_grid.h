@@ -32,6 +32,8 @@ private:
     void check_for_matches();
     void add_active_block(active_block active_block);
     vector<active_block> check_direction(int x, int y, Direction direction);
+
+    void add_new_falling_blocks(vector<active_block> &new_actions, int y, int x);
 };
 
 

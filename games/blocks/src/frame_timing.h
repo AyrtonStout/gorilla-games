@@ -8,6 +8,7 @@ const int FRAMES_OF_LIGHT = 44; // The block will alternate back and forth betwe
 const int FRAMES_OF_FACE = 25; // How long ALL blocks in a block group show a face before they pop
 const int FRAME_PER_POP = 9; // How long after a block pops before the next block pops
 const int FRAME_POP_DROP_DELAY = 12; // How long after a pop before the blocks above them fall down
+                                     // Also how long after you slide a block that the blocks above it fall
 
 // When a block lands after a fall, it squishes, jumps up, then normalizes
 const int FRAME_SQUISH = 3; // How long a block looks squished
