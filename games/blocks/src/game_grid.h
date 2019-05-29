@@ -3,6 +3,7 @@
 
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 #include "block.h"
 
@@ -26,9 +27,10 @@ public:
 
 private:
     vector<active_block> active_blocks;
+    unordered_set<int> active_blocks_ids;
 
     void check_for_matches();
-
+    void add_active_block(active_block active_block);
     vector<active_block> check_direction(int x, int y, Direction direction);
 };
 

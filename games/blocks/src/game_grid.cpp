@@ -1,5 +1,4 @@
 #include <iostream>
-#include <unordered_set>
 #include "direction.h"
 #include "game_grid.h"
 
@@ -31,8 +30,8 @@ void GameGrid::swap_panels(int x, int y) {
     active_block left_active_block = { .block = left_block, .x = x, .y = y };
     active_block right_active_block = { .block = right_block, .x = x + 1, .y = y };
 
-    active_blocks.push_back(left_active_block);
-    active_blocks.push_back(right_active_block);
+    add_active_block(left_active_block);
+    add_active_block(right_active_block);
 
     check_for_matches();
 }
@@ -83,9 +82,6 @@ vector<active_block> GameGrid::check_direction(int x, int y, Direction direction
 }
 
 void GameGrid::check_for_matches() {
-    auto popping_block_ids = unordered_set<int>();
-    auto popping_blocks = vector<active_block>();
-
     for (int y = 0; y < blocks.size(); y++) {
         for (int x = 0; x < blocks[0].size(); x++) {
             Direction directions[] = { Direction::UP, Direction::LEFT, Direction::DOWN, Direction::RIGHT };
@@ -94,19 +90,19 @@ void GameGrid::check_for_matches() {
                 auto found_blocks = check_direction(x, y, direction);
 
                 for (const auto& popping_block : found_blocks) {
-                    int block_id = popping_block.block->get_id();
-                    if (popping_block_ids.count(block_id) == 0) {
-                        popping_block_ids.insert(block_id);
-                        popping_blocks.push_back(popping_block);
-                    }
+                    popping_block.block->transition_to_state(BlockAction::FLASHING_1);
+                    add_active_block(popping_block);
                 }
             }
         }
     }
+}
 
-    for (const auto& popping_block : popping_blocks) {
-        popping_block.block->transition_to_state(BlockAction::FLASHING_1);
-        active_blocks.push_back(popping_block);
+void GameGrid::add_active_block(active_block active_block) {
+    int block_id = active_block.block->get_id();
+    if (active_blocks_ids.count(block_id) == 0) {
+        active_blocks_ids.insert(block_id);
+        active_blocks.push_back(active_block);
     }
 }
 
@@ -199,6 +195,7 @@ void GameGrid::update() {
 
         current_block->complete_action();
         active_blocks.erase(active_blocks.begin() + i); // Delete both this and the next block...
+        active_blocks_ids.erase(current_block->get_id());
         i--;
     }
 
@@ -209,6 +206,6 @@ void GameGrid::update() {
     // TODO this probably has unintended behavior if a block is floating when it gets matched with other blocks...
     // Add any new actions so that we keep watch over them
     for (const auto& new_action : new_actions) {
-        active_blocks.push_back(new_action);
+        add_active_block(new_action);
     }
 }

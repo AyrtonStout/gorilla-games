@@ -64,7 +64,6 @@ void Block::transition_to_state(BlockAction action) {
     } else if (action == BlockAction::FALLING) {
         action_frames_remaining = FRAMES_TO_FALL;
     }
-
 }
 
 void Block::update() {
@@ -110,7 +109,20 @@ int Block::get_action_frames_remaining() {
 }
 
 bool Block::can_be_matched_with() {
-    return !deleted && (block_action == BlockAction::NONE || block_action == BlockAction::FLOATING);
+    if (deleted) {
+        return false;
+    }
+
+    switch (block_action) {
+        case BlockAction::NONE:
+        case BlockAction::FLOATING:
+            return true;
+        case BlockAction::FLASHING_1:
+            // This means the block was JUST told to start popping this frame. So it's still "matchable" to other blocks around it
+            return action_frames_remaining == FRAMES_OF_LIGHT;
+        default:
+            return false;
+    }
 }
 
 bool Block::can_prevent_falling() {
