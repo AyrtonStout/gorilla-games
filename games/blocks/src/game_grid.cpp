@@ -64,7 +64,7 @@ vector<active_block> GameGrid::check_direction(int x, int y, Direction direction
             break;
         }
 
-        if (compare_block->get_block_type() == current_block->get_block_type()) {
+        if (compare_block->block_type == current_block->block_type) {
             found_blocks.push_back(active_block { .block = compare_block, .x = x, .y = y });
         } else {
             break;

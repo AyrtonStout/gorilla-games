@@ -7,6 +7,7 @@
 
 using namespace std;
 
+// As much as I would love to use a more robust Enum Class here, it makes random access more cumbersome
 enum BlockType { L_BLUE, D_BLUE, RED, GREEN, PURPLE, YELLOW, COUNT };
 
 enum class BlockAction { NONE, SLIDE_LEFT, SLIDE_RIGHT, FALLING, SLIDE_FLOAT, POP_FLOAT, FLOATING, FLASHING_1, FLASHING_2 };
@@ -16,8 +17,8 @@ class Block {
 public:
     Block();
 
-    BlockType get_block_type();
     BlockAction block_action;
+    BlockType block_type;
     int get_id();
     int get_render_offset_x();
     int get_render_offset_y();
@@ -37,7 +38,6 @@ public:
 private:
     int render_offset_x;
     int render_offset_y;
-    BlockType block_type;
 
     int id;
     int action_frames_remaining;

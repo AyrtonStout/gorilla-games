@@ -191,7 +191,7 @@ void Sdl2Runner::update() {
                     .h = Block::BLOCK_SIZE * SCALING
             };
 
-            BlockType block_type = block->get_block_type();
+            BlockType block_type = block->block_type;
             SDL_Texture *texture;
             if (block->block_action == BlockAction::FLASHING_1) {
                 int frame = block->get_action_frames_remaining();

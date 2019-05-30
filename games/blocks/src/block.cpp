@@ -21,10 +21,6 @@ const map<BlockType, string> Block::block_to_file_name = {
         { RED, "red-block" }
 };
 
-BlockType Block::get_block_type() {
-    return block_type;
-}
-
 int Block::get_render_offset_x() {
     return render_offset_x;
 }
@@ -36,7 +32,7 @@ int Block::get_render_offset_y() {
 Block::Block() {
     this->render_offset_x = 0;
     this->render_offset_y = 0;
-    this->block_type = (BlockType) (generator() % BlockType::COUNT);
+    this->block_type = L_BLUE; // Doesn't matter the value. It'll be getting changed when the block is made visible
 
     id = ++Block::next_block_id;
     block_action = BlockAction::NONE;
