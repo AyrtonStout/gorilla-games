@@ -34,7 +34,7 @@ Sdl2Runner::Sdl2Runner(GameState *game_state) {
 
     SDL_Window *window;
 
-    SDL_CreateWindowAndRenderer(500, 600, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(BACKGROUND_WIDTH * SCALING, BACKGROUND_HEIGHT * SCALING, 0, &window, &renderer);
 
     // Set up a white background
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -66,14 +66,26 @@ void Sdl2Runner::run() {
 void Sdl2Runner::load_textures() {
     const string file_path = pathPrefix + "assets/images/";
 
+    // Cursor
     SDL_Surface *cursor_image = IMG_Load((file_path + "cursor.png").c_str());
     if (!cursor_image) {
         printf("IMG_Load: %s\n", IMG_GetError());
         return;
     }
 
+    // Background
     cursor_texture = SDL_CreateTextureFromSurface(renderer, cursor_image);
     SDL_FreeSurface(cursor_image);
+
+
+    SDL_Surface *background_image = IMG_Load((file_path + "game-background.png").c_str());
+    if (!background_image) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+        return;
+    }
+
+    background_texture = SDL_CreateTextureFromSurface(renderer, background_image);
+    SDL_FreeSurface(background_image);
 
     // Normal block images
     for (int i = 0; i < BlockType::COUNT; i++) {
@@ -156,6 +168,15 @@ void Sdl2Runner::update() {
 
     SDL_RenderClear(renderer);
 
+    // TODO Background rect shouldn't ever change. might not need to redo this every update but not sure the best way to not do that
+    SDL_Rect background_rect = {
+            .x = 0,
+            .y = 0,
+            .w = BACKGROUND_WIDTH * SCALING,
+            .h = BACKGROUND_HEIGHT * SCALING
+    };
+    SDL_RenderCopy(renderer, background_texture, nullptr, &background_rect);
+
     for (int y = 0; y < game_state->game_grid.blocks.size(); y++) {
         for (int x = 0; x < game_state->game_grid.blocks[0].size(); x++) {
             auto block = game_state->game_grid.blocks[y][x];
@@ -164,8 +185,8 @@ void Sdl2Runner::update() {
             }
 
             SDL_Rect rect = {
-                    .x = (x * Block::BLOCK_SIZE + block->get_render_offset_x()) * SCALING,
-                    .y = (y * Block::BLOCK_SIZE + block->get_render_offset_y()) * SCALING,
+                    .x = (x * Block::BLOCK_SIZE + block->get_render_offset_x() + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
+                    .y = (y * Block::BLOCK_SIZE + block->get_render_offset_y() + BACKGROUND_GAME_HEIGHT_OFFSET) * SCALING,
                     .w = Block::BLOCK_SIZE * SCALING,
                     .h = Block::BLOCK_SIZE * SCALING
             };
@@ -188,8 +209,8 @@ void Sdl2Runner::update() {
     }
 
     SDL_Rect cursor_rect = {
-            .x = game_state->game_cursor.get_x() * Block::BLOCK_SIZE * SCALING - 7,
-            .y = game_state->game_cursor.get_y() * Block::BLOCK_SIZE * SCALING - 7,
+            .x = (game_state->game_cursor.get_x() * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING - 7,
+            .y = (game_state->game_cursor.get_y() * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET) * SCALING - 7,
             .w = GameCursor::CURSOR_WIDTH * SCALING,
             .h = GameCursor::CURSOR_HEIGHT * SCALING
     };

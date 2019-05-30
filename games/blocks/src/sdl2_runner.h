@@ -17,10 +17,15 @@ private:
     map<BlockType, SDL_Texture*> block_textures;
     map<BlockType, SDL_Texture*> block_flash_textures;
     SDL_Texture *cursor_texture;
+    SDL_Texture *background_texture;
     GameState *game_state;
     bool running = true;
 
     const int SCALING = 3;
+    const int BACKGROUND_WIDTH = 256;
+    const int BACKGROUND_HEIGHT = 224;
+    const int BACKGROUND_GAME_WIDTH_OFFSET = 80;
+    const int BACKGROUND_GAME_HEIGHT_OFFSET = 23;
 
     void load_textures();
     void process_input();
