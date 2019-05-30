@@ -1,15 +1,12 @@
 #include <iostream>
 #include "direction.h"
 #include "game_grid.h"
+#include "game_board_generator.h"
 
 GameGrid::GameGrid() {
-    for (int y = 0; y < GameGrid::GAME_HEIGHT; y++) {
-        blocks.emplace_back();
-        for (int x = 0; x < GameGrid::GAME_WIDTH; x++) {
-            shared_ptr<Block> ptr(new Block());
-            blocks[y].push_back(ptr);
-        }
-    }
+    auto generator = GameBoardGenerator();
+
+    blocks = generator.generate_pattern();
 }
 
 void GameGrid::swap_panels(int x, int y) {
