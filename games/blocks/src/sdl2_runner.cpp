@@ -123,20 +123,21 @@ void Sdl2Runner::load_textures() {
 }
 
 void Sdl2Runner::process_keypress(SDL_Event event) {
-    auto cursor = &game_state->game_cursor;
+    auto grid = &game_state->game_grid;
+    auto cursor = &game_state->game_grid.game_cursor;
 
     switch (event.key.keysym.sym)
     {
         case SDLK_UP:
-            cursor->move(Direction::UP); break;
+            grid->move_cursor(Direction::UP); break;
         case SDLK_DOWN:
-            cursor->move(Direction::DOWN); break;
+            grid->move_cursor(Direction::DOWN); break;
         case SDLK_LEFT:
-            cursor->move(Direction::LEFT); break;
+            grid->move_cursor(Direction::LEFT); break;
         case SDLK_RIGHT:
-            cursor->move(Direction::RIGHT); break;
+            grid->move_cursor(Direction::RIGHT); break;
         case SDLK_z:
-            game_state->game_grid.swap_panels(cursor->get_x(), cursor->get_y()); break;
+            game_state->game_grid.swap_panels(cursor->x, cursor->y); break;
         default:
             break;
     }
@@ -175,7 +176,6 @@ void Sdl2Runner::update() {
             .w = BACKGROUND_WIDTH * SCALING,
             .h = BACKGROUND_HEIGHT * SCALING
     };
-    SDL_RenderCopy(renderer, background_texture, nullptr, &background_rect);
 
     for (int y = 0; y < game_state->game_grid.blocks.size(); y++) {
         for (int x = 0; x < game_state->game_grid.blocks[0].size(); x++) {
@@ -186,7 +186,7 @@ void Sdl2Runner::update() {
 
             SDL_Rect rect = {
                     .x = (x * Block::BLOCK_SIZE + block->get_render_offset_x() + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
-                    .y = (y * Block::BLOCK_SIZE + block->get_render_offset_y() + BACKGROUND_GAME_HEIGHT_OFFSET) * SCALING,
+                    .y = ((y + 1) * Block::BLOCK_SIZE + block->get_render_offset_y() + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING,
                     .w = Block::BLOCK_SIZE * SCALING,
                     .h = Block::BLOCK_SIZE * SCALING
             };
@@ -208,13 +208,16 @@ void Sdl2Runner::update() {
         }
     }
 
+    auto cursor = game_state->game_grid.game_cursor;
+
     SDL_Rect cursor_rect = {
-            .x = (game_state->game_cursor.get_x() * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING - 7,
-            .y = (game_state->game_cursor.get_y() * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET) * SCALING - 7,
+            .x = (cursor.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING - 7,
+            .y = ((cursor.y + 1) * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING - 7,
             .w = GameCursor::CURSOR_WIDTH * SCALING,
             .h = GameCursor::CURSOR_HEIGHT * SCALING
     };
 
+    SDL_RenderCopy(renderer, background_texture, nullptr, &background_rect);
     SDL_RenderCopy(renderer, cursor_texture, nullptr, &cursor_rect);
     SDL_RenderPresent(renderer);
 

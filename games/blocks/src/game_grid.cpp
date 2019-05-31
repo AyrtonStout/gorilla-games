@@ -4,9 +4,10 @@
 #include "game_board_generator.h"
 
 GameGrid::GameGrid() {
-    auto generator = GameBoardGenerator();
+    board_generator = GameBoardGenerator();
+    game_cursor = GameCursor();
 
-    blocks = generator.generate_pattern();
+    blocks = board_generator.generate_pattern();
 }
 
 void GameGrid::swap_panels(int x, int y) {
@@ -117,6 +118,50 @@ void GameGrid::add_new_falling_blocks(vector<active_block> &new_actions, int x, 
 }
 
 void GameGrid::update() {
+    handle_block_updates();
+    handle_stack_increase();
+}
+
+void GameGrid::handle_stack_increase() {
+    stack_increase_frame++;
+
+    if (stack_increase_frame >= frames_per_stack_increase) {
+        stack_increase_height++;
+        stack_increase_frame = 0;
+    }
+
+    if (stack_increase_height > Block::BLOCK_SIZE) {
+        stack_increase_height = 1;
+
+        // Move all the blocks up
+        for (int y = 1; y < blocks.size(); y++) {
+            for (int x = 0; x < blocks[0].size(); x++) {
+                swap(blocks[y - 1][x], blocks[y][x]);
+            }
+        }
+
+        auto new_blocks = board_generator.generate_row();
+        // Replace the blocks in the bottom row with new blocks
+        for (int x = 0; x < new_blocks.size(); x++) {
+            blocks[blocks.size() - 1][x] = new_blocks[x];
+        }
+
+        // Keep moving the cursor up with the blocks (unless it is at the top. In which case we let it get bumped down)
+        if (game_cursor.y > 0) {
+            game_cursor.y--;
+        }
+
+        // TODO game over condition
+        // TODO make new blocks appear
+    }
+
+}
+
+int GameGrid::get_stack_increase_height() {
+    return stack_increase_height;
+}
+
+void GameGrid::handle_block_updates() {
     if (active_blocks.size() == 0) {
         return;
     }
@@ -201,4 +246,8 @@ void GameGrid::update() {
     for (const auto& new_action : new_actions) {
         add_active_block(new_action);
     }
+}
+
+void GameGrid::move_cursor(Direction direction) {
+    game_cursor.move(direction, stack_increase_height == Block::BLOCK_SIZE);
 }
