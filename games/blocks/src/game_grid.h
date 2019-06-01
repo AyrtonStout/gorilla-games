@@ -46,6 +46,8 @@ private:
     void add_new_falling_blocks(vector<active_block> &new_actions, int y, int x);
     void handle_block_updates();
     void handle_stack_increase();
+
+    bool are_bottom_blocks_accessible();
 };
 
 

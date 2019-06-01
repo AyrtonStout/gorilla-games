@@ -13,6 +13,8 @@ public:
     vector<shared_ptr<Block>> generate_row();
 
 private:
+    vector<shared_ptr<Block>> last_generated_row;
+
     vector<vector<vector<uint8_t>>> generation_patterns = {
             {
                     { 0, 0, 0, 0, 0, 0 },

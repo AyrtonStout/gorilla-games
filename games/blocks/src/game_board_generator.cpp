@@ -51,10 +51,11 @@ vector<vector<shared_ptr<Block>>> GameBoardGenerator::generate_pattern() {
             blocks[y].push_back(block);
         }
     }
+
+    last_generated_row = blocks[GameGrid::GAME_HEIGHT - 1];
     return blocks;
 }
 
-// TODO have this remember state of the last row so it doesn't generate with like blocks touching
 vector<shared_ptr<Block>> GameBoardGenerator::generate_row() {
     auto blocks = vector<shared_ptr<Block>>();
 
@@ -62,9 +63,13 @@ vector<shared_ptr<Block>> GameBoardGenerator::generate_row() {
         shared_ptr<Block> block(new Block());
         auto left_block = x > 0 ? blocks[x - 1] : nullptr;
 
-        block->block_type = get_valid_block_type(left_block, nullptr);
+        auto top_block = last_generated_row[x];
+
+        block->block_type = get_valid_block_type(left_block, top_block);
         blocks.push_back(block);
     }
+
+    last_generated_row = blocks;
 
     return blocks;
 }

@@ -31,6 +31,7 @@ public:
     bool can_prevent_falling();
 
     bool deleted = false;
+    bool inaccessible = false;
     static const int BLOCK_SIZE = 16;
 
     static const map<BlockType, string> block_to_file_name;

@@ -73,11 +73,11 @@ void Sdl2Runner::load_textures() {
         return;
     }
 
-    // Background
     cursor_texture = SDL_CreateTextureFromSurface(renderer, cursor_image);
     SDL_FreeSurface(cursor_image);
 
 
+    // Background
     SDL_Surface *background_image = IMG_Load((file_path + "game-background.png").c_str());
     if (!background_image) {
         printf("IMG_Load: %s\n", IMG_GetError());
@@ -86,6 +86,18 @@ void Sdl2Runner::load_textures() {
 
     background_texture = SDL_CreateTextureFromSurface(renderer, background_image);
     SDL_FreeSurface(background_image);
+
+
+    // Black tint
+    SDL_Surface *black_tint_image = IMG_Load((file_path + "black-tint.png").c_str());
+    if (!black_tint_image) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+        return;
+    }
+
+    black_tint_texture = SDL_CreateTextureFromSurface(renderer, black_tint_image);
+    SDL_FreeSurface(black_tint_image);
+
 
     // Normal block images
     for (int i = 0; i < BlockType::COUNT; i++) {
@@ -103,6 +115,7 @@ void Sdl2Runner::load_textures() {
 
         SDL_FreeSurface(image);
     }
+
 
     // Flashing block images
     for (int i = 0; i < BlockType::COUNT; i++) {
@@ -205,6 +218,9 @@ void Sdl2Runner::update() {
             }
 
             SDL_RenderCopy(renderer, texture, nullptr, &rect);
+            if (block->inaccessible) {
+                SDL_RenderCopy(renderer, black_tint_texture, nullptr, &rect);
+            }
         }
     }
 

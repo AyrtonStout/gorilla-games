@@ -18,6 +18,7 @@ private:
     map<BlockType, SDL_Texture*> block_flash_textures;
     SDL_Texture *cursor_texture;
     SDL_Texture *background_texture;
+    SDL_Texture *black_tint_texture;
     GameState *game_state;
     bool running = true;
 

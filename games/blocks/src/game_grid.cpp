@@ -80,7 +80,9 @@ vector<active_block> GameGrid::check_direction(int x, int y, Direction direction
 }
 
 void GameGrid::check_for_matches() {
-    for (int y = 0; y < blocks.size(); y++) {
+    int size_to_check = are_bottom_blocks_accessible() ? blocks.size() : blocks.size() - 1;
+
+    for (int y = 0; y < size_to_check; y++) {
         for (int x = 0; x < blocks[0].size(); x++) {
             Direction directions[] = { Direction::UP, Direction::LEFT, Direction::DOWN, Direction::RIGHT };
 
@@ -135,7 +137,14 @@ void GameGrid::handle_stack_increase() {
         stack_increase_frame = 0;
     }
 
-    if (stack_increase_height > Block::BLOCK_SIZE) {
+    if (stack_increase_height == Block::BLOCK_SIZE) {
+        // This is the point that the bottom blocks have "moved up" all the way and are now accessible
+        for (int x = 0; x < blocks[0].size(); x++) {
+            blocks[blocks.size() - 1][x]->inaccessible = false;
+        }
+        check_for_matches();
+    } else if (stack_increase_height > Block::BLOCK_SIZE) {
+        // This is the frame right after, where we spawn in new blocks
         stack_increase_height = 1;
 
         // Move all the blocks up
@@ -148,6 +157,7 @@ void GameGrid::handle_stack_increase() {
         auto new_blocks = board_generator.generate_row();
         // Replace the blocks in the bottom row with new blocks
         for (int x = 0; x < new_blocks.size(); x++) {
+            new_blocks[x]->inaccessible = true;
             blocks[blocks.size() - 1][x] = new_blocks[x];
         }
 
@@ -254,5 +264,9 @@ void GameGrid::handle_block_updates() {
 }
 
 void GameGrid::move_cursor(Direction direction) {
-    game_cursor.move(direction, stack_increase_height == Block::BLOCK_SIZE);
+    game_cursor.move(direction, are_bottom_blocks_accessible());
+}
+
+bool GameGrid::are_bottom_blocks_accessible() {
+    return stack_increase_height == Block::BLOCK_SIZE;
 }
