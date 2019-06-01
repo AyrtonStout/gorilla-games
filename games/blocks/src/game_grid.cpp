@@ -123,6 +123,11 @@ void GameGrid::update() {
 }
 
 void GameGrid::handle_stack_increase() {
+    // The stack does not rise if anything at all is happening
+    if (active_blocks.size() > 0) {
+        return;
+    }
+
     stack_increase_frame++;
 
     if (stack_increase_frame >= frames_per_stack_increase) {
