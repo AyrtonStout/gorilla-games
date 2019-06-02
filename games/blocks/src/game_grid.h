@@ -27,6 +27,8 @@ public:
     static const int GAME_HEIGHT = 12;
     static const int GAME_WIDTH = 6;
 
+    static const int MAX_COMBO = 19; // Does this make sense to be in this header file?
+
     int get_stack_increase_height();
     void move_cursor(Direction direction);
     void swap_panels(int x, int y);

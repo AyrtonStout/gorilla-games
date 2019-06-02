@@ -133,6 +133,29 @@ void Sdl2Runner::load_textures() {
 
         SDL_FreeSurface(image);
     }
+
+
+    // Combo images
+    for (int i = 4; i <= GameGrid::MAX_COMBO; i++) {
+        SDL_Surface *image = IMG_Load((file_path + "combo/combo-" + to_string(i) + ".png").c_str());
+        if (!image) {
+            printf("IMG_Load: %s\n", IMG_GetError());
+            continue;
+        }
+        auto texture = SDL_CreateTextureFromSurface(renderer, image);
+        combo_textures.emplace(i, texture);
+
+        SDL_FreeSurface(image);
+    }
+
+    SDL_Surface *combo_unknown_image = IMG_Load((file_path + "combo/combo-unknown.png").c_str());
+    if (!combo_unknown_image) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+        return;
+    }
+
+    combo_unknown_texture = SDL_CreateTextureFromSurface(renderer, combo_unknown_image);
+    SDL_FreeSurface(combo_unknown_image);
 }
 
 void Sdl2Runner::process_keypress(SDL_Event event) {
