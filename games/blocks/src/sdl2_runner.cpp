@@ -151,6 +151,8 @@ void Sdl2Runner::process_keypress(SDL_Event event) {
             grid->move_cursor(Direction::RIGHT); break;
         case SDLK_z:
             game_state->game_grid.swap_panels(cursor->x, cursor->y); break;
+        case SDLK_x:
+            game_state->game_grid.stack_raise_requested = true;
         default:
             break;
     }
@@ -164,6 +166,13 @@ void Sdl2Runner::process_input() {
         switch (event.type) {
             case SDL_KEYDOWN:
                 process_keypress(event);
+                break;
+            case SDL_KEYUP:
+                switch (event.key.keysym.sym) {
+                    case SDLK_x:
+                        game_state->game_grid.stack_raise_requested = false;
+                        break;
+                }
                 break;
             case SDL_WINDOWEVENT:
                 if (event.window.event == SDL_WINDOWEVENT_CLOSE) {

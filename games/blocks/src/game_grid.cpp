@@ -130,9 +130,16 @@ void GameGrid::handle_stack_increase() {
         return;
     }
 
+    // stack_raise_requested / stack_raise_active are when the user forces a stack raise
+    // After the user requests the stack be raised, it cannot be stopped until the stack raise is over
+    // During this time, the stack raises one pixel per frame
+    if (stack_raise_requested) {
+        stack_raise_active = true;
+    }
+
     stack_increase_frame++;
 
-    if (stack_increase_frame >= frames_per_stack_increase) {
+    if (stack_raise_active || stack_increase_frame >= frames_per_stack_increase) {
         stack_increase_height++;
         stack_increase_frame = 0;
     }
@@ -143,6 +150,7 @@ void GameGrid::handle_stack_increase() {
             blocks[blocks.size() - 1][x]->inaccessible = false;
         }
         check_for_matches();
+        stack_raise_active = false;
     } else if (stack_increase_height > Block::BLOCK_SIZE) {
         // This is the frame right after, where we spawn in new blocks
         stack_increase_height = 1;
