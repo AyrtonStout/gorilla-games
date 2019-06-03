@@ -267,6 +267,19 @@ void Sdl2Runner::update() {
 
     SDL_RenderCopy(renderer, background_texture, nullptr, &background_rect);
     SDL_RenderCopy(renderer, cursor_texture, nullptr, &cursor_rect);
+
+    for (auto combo_indicator : game_state->game_grid.get_combo_indications()) {
+        SDL_Rect rect = {
+                .x = (combo_indicator.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
+                .y = (combo_indicator.y * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING,
+                .w = Block::BLOCK_SIZE * SCALING,
+                .h = Block::BLOCK_SIZE * SCALING
+        };
+
+        SDL_RenderCopy(renderer, combo_textures[combo_indicator.combo_size], nullptr, &rect);
+    }
+
+
     SDL_RenderPresent(renderer);
 
 #ifdef __EMSCRIPTEN__

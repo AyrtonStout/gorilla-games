@@ -1,3 +1,4 @@
+#include <climits>
 #include <iostream>
 #include "direction.h"
 #include "game_grid.h"
@@ -82,6 +83,10 @@ vector<active_block> GameGrid::check_direction(int x, int y, Direction direction
 void GameGrid::check_for_matches() {
     int size_to_check = are_bottom_blocks_accessible() ? blocks.size() : blocks.size() - 1;
 
+    int left_pop_coordinate = INT_MAX;
+    int top_pop_coordinate = INT_MAX;
+    int combo_size = 0;
+
     for (int y = 0; y < size_to_check; y++) {
         for (int x = 0; x < blocks[0].size(); x++) {
             Direction directions[] = { Direction::UP, Direction::LEFT, Direction::DOWN, Direction::RIGHT };
@@ -91,19 +96,43 @@ void GameGrid::check_for_matches() {
 
                 for (const auto& popping_block : found_blocks) {
                     popping_block.block->transition_to_state(BlockAction::FLASHING_1);
-                    add_active_block(popping_block);
+                    bool block_added = add_active_block(popping_block);
+
+                    if (block_added) {
+                        combo_size++;
+
+                        if (popping_block.y < top_pop_coordinate
+                        || (popping_block.y == top_pop_coordinate && popping_block.x < left_pop_coordinate)) {
+                            left_pop_coordinate = popping_block.x;
+                            top_pop_coordinate = popping_block.y;
+                        }
+                    }
                 }
             }
         }
     }
+
+    if (combo_size > 3 && left_pop_coordinate > -1) {
+        combo_indications.push_back(
+                {
+                        .combo_size = combo_size,
+                        .x = left_pop_coordinate,
+                        .y = top_pop_coordinate,
+                        .frames_remaining = 60
+                }
+        );
+    }
 }
 
-void GameGrid::add_active_block(active_block active_block) {
+bool GameGrid::add_active_block(active_block active_block) {
     int block_id = active_block.block->get_id();
     if (active_blocks_ids.count(block_id) == 0) {
         active_blocks_ids.insert(block_id);
         active_blocks.push_back(active_block);
+
+        return true;
     }
+    return false;
 }
 
 void GameGrid::add_new_falling_blocks(vector<active_block> &new_actions, int x, int y) {
@@ -122,6 +151,7 @@ void GameGrid::add_new_falling_blocks(vector<active_block> &new_actions, int x, 
 void GameGrid::update() {
     handle_block_updates();
     handle_stack_increase();
+    handle_combo_indications();
 }
 
 void GameGrid::handle_stack_increase() {
@@ -182,6 +212,16 @@ void GameGrid::handle_stack_increase() {
 
 int GameGrid::get_stack_increase_height() {
     return stack_increase_height;
+}
+
+void GameGrid::handle_combo_indications() {
+    for (int i = 0; i < combo_indications.size(); i++) {
+        combo_indications[i].frames_remaining--;
+        if (combo_indications[i].frames_remaining == 0) {
+            combo_indications.erase(combo_indications.begin() + i);
+            i--;
+        }
+    }
 }
 
 void GameGrid::handle_block_updates() {
@@ -277,4 +317,8 @@ void GameGrid::move_cursor(Direction direction) {
 
 bool GameGrid::are_bottom_blocks_accessible() {
     return stack_increase_height == Block::BLOCK_SIZE;
+}
+
+vector<combo_indication> GameGrid::get_combo_indications() {
+    return combo_indications;
 }

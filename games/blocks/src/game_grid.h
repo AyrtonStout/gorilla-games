@@ -17,6 +17,13 @@ struct active_block {
     int y;
 };
 
+struct combo_indication {
+    int combo_size;
+    int x;
+    int y;
+    int frames_remaining;
+};
+
 class GameGrid {
 public:
     GameGrid();
@@ -30,12 +37,14 @@ public:
     static const int MAX_COMBO = 19; // Does this make sense to be in this header file?
 
     int get_stack_increase_height();
+    vector<combo_indication> get_combo_indications();
     void move_cursor(Direction direction);
     void swap_panels(int x, int y);
     void update();
 
 private:
     vector<active_block> active_blocks;
+    vector<combo_indication> combo_indications;
     unordered_set<int> active_blocks_ids;
     GameBoardGenerator board_generator;
 
@@ -46,12 +55,13 @@ private:
     bool stack_raise_active = false;
 
     void check_for_matches();
-    void add_active_block(active_block active_block);
+    bool add_active_block(active_block active_block);
     vector<active_block> check_direction(int x, int y, Direction direction);
 
     void add_new_falling_blocks(vector<active_block> &new_actions, int y, int x);
     void handle_block_updates();
     void handle_stack_increase();
+    void handle_combo_indications();
 
     bool are_bottom_blocks_accessible();
 };
