@@ -87,6 +87,8 @@ void GameGrid::check_for_matches() {
     int top_pop_coordinate = INT_MAX;
     int combo_size = 0;
 
+    bool chained = false;
+
     for (int y = 0; y < size_to_check; y++) {
         for (int x = 0; x < blocks[0].size(); x++) {
             Direction directions[] = { Direction::UP, Direction::LEFT, Direction::DOWN, Direction::RIGHT };
@@ -101,6 +103,10 @@ void GameGrid::check_for_matches() {
                     if (block_added) {
                         combo_size++;
 
+                        if (popping_block.block->chainable) {
+                            chained = true;
+                        }
+
                         if (popping_block.y < top_pop_coordinate
                         || (popping_block.y == top_pop_coordinate && popping_block.x < left_pop_coordinate)) {
                             left_pop_coordinate = popping_block.x;
@@ -113,12 +119,27 @@ void GameGrid::check_for_matches() {
     }
 
     if (combo_size > 3 && left_pop_coordinate > -1) {
-        combo_indications.push_back(
+        special_pop_indications.push_back(
                 {
-                        .combo_size = combo_size,
+                        .size = combo_size,
+                        .pop_type = PopType::COMBO,
                         .x = left_pop_coordinate,
                         .y = top_pop_coordinate,
-                        .frames_remaining = 60
+                        .frames_remaining = 60,
+                        .both_special_triggered = chained
+                }
+        );
+    }
+
+    if (chained) {
+        special_pop_indications.push_back(
+                {
+                        .size = ++current_chain,
+                        .pop_type = PopType::CHAIN,
+                        .x = left_pop_coordinate,
+                        .y = top_pop_coordinate,
+                        .frames_remaining = 60,
+                        .both_special_triggered = combo_size > 3
                 }
         );
     }
@@ -135,7 +156,7 @@ bool GameGrid::add_active_block(active_block active_block) {
     return false;
 }
 
-void GameGrid::add_new_falling_blocks(vector<active_block> &new_actions, int x, int y) {
+void GameGrid::add_new_falling_blocks(vector<active_block> &new_actions, int x, int y, bool chainable) {
     // Go up from the moved / popped block, telling every contiguous block above it to get ready to fall
     for (int y_to_check = y - 1; y_to_check >= 0; y_to_check--) {
         auto block_to_check = blocks[y_to_check][x];
@@ -143,6 +164,7 @@ void GameGrid::add_new_falling_blocks(vector<active_block> &new_actions, int x, 
             break;
         } else {
             block_to_check->transition_to_state(BlockAction::POP_FLOAT);
+            block_to_check->chainable = chainable;
             new_actions.push_back({ .block = block_to_check, .x = x, .y = y_to_check });
         }
     }
@@ -215,10 +237,10 @@ int GameGrid::get_stack_increase_height() {
 }
 
 void GameGrid::handle_combo_indications() {
-    for (int i = 0; i < combo_indications.size(); i++) {
-        combo_indications[i].frames_remaining--;
-        if (combo_indications[i].frames_remaining == 0) {
-            combo_indications.erase(combo_indications.begin() + i);
+    for (int i = 0; i < special_pop_indications.size(); i++) {
+        special_pop_indications[i].frames_remaining--;
+        if (special_pop_indications[i].frames_remaining == 0) {
+            special_pop_indications.erase(special_pop_indications.begin() + i);
             i--;
         }
     }
@@ -272,7 +294,7 @@ void GameGrid::handle_block_updates() {
                 new_actions.push_back({ .block = current_block, .x = new_x, .y = y });
             }
 
-            add_new_falling_blocks(new_actions, x, y);
+            add_new_falling_blocks(new_actions, x, y, false);
         } else if (action == BlockAction::FLOATING) {
             if (y + 1 < GAME_HEIGHT && !blocks[y + 1][x]->can_prevent_falling()) {
                 current_block->transition_to_state(BlockAction::FALLING);
@@ -291,7 +313,7 @@ void GameGrid::handle_block_updates() {
                 }
             }
         } else if (action == BlockAction::FLASHING_1) {
-            add_new_falling_blocks(new_actions, x, y);
+            add_new_falling_blocks(new_actions, x, y, true);
         }
 
         current_block->complete_action();
@@ -319,6 +341,6 @@ bool GameGrid::are_bottom_blocks_accessible() {
     return stack_increase_height == Block::BLOCK_SIZE;
 }
 
-vector<combo_indication> GameGrid::get_combo_indications() {
-    return combo_indications;
+vector<special_pop_indication> GameGrid::get_combo_indications() {
+    return special_pop_indications;
 }

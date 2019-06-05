@@ -156,6 +156,29 @@ void Sdl2Runner::load_textures() {
 
     combo_unknown_texture = SDL_CreateTextureFromSurface(renderer, combo_unknown_image);
     SDL_FreeSurface(combo_unknown_image);
+
+
+    // Chain images
+    for (int i = 2; i <= GameGrid::MAX_COMBO; i++) {
+        SDL_Surface *image = IMG_Load((file_path + "chain/chain-" + to_string(i) + ".png").c_str());
+        if (!image) {
+            printf("IMG_Load: %s\n", IMG_GetError());
+            continue;
+        }
+        auto texture = SDL_CreateTextureFromSurface(renderer, image);
+        chain_textures.emplace(i, texture);
+
+        SDL_FreeSurface(image);
+    }
+
+    SDL_Surface *chain_unknown_image = IMG_Load((file_path + "chain/chain-unknown.png").c_str());
+    if (!chain_unknown_image) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+        return;
+    }
+
+    chain_unknown_texture = SDL_CreateTextureFromSurface(renderer, chain_unknown_image);
+    SDL_FreeSurface(chain_unknown_image);
 }
 
 void Sdl2Runner::process_keypress(SDL_Event event) {
@@ -268,17 +291,18 @@ void Sdl2Runner::update() {
     SDL_RenderCopy(renderer, background_texture, nullptr, &background_rect);
     SDL_RenderCopy(renderer, cursor_texture, nullptr, &cursor_rect);
 
-    for (auto combo_indicator : game_state->game_grid.get_combo_indications()) {
+    for (auto indicator : game_state->game_grid.get_combo_indications()) {
         SDL_Rect rect = {
-                .x = (combo_indicator.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
-                .y = (combo_indicator.y * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING,
+                .x = (indicator.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
+                .y = (indicator.y * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING,
                 .w = Block::BLOCK_SIZE * SCALING,
                 .h = Block::BLOCK_SIZE * SCALING
         };
 
-        SDL_RenderCopy(renderer, combo_textures[combo_indicator.combo_size], nullptr, &rect);
-    }
+        auto texture = indicator.pop_type == PopType::COMBO ? combo_textures[indicator.size] : chain_textures[indicator.size];
 
+        SDL_RenderCopy(renderer, texture, nullptr, &rect);
+    }
 
     SDL_RenderPresent(renderer);
 

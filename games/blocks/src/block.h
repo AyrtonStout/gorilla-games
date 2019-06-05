@@ -32,6 +32,8 @@ public:
 
     bool deleted = false;
     bool inaccessible = false;
+    bool chainable = false;
+
     static const int BLOCK_SIZE = 16;
 
     static const map<BlockType, string> block_to_file_name;
