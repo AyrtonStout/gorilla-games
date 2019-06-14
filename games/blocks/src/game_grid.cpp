@@ -313,6 +313,8 @@ void GameGrid::handle_block_updates() {
                 }
             }
         } else if (action == BlockAction::FLASHING_1) {
+            // no op for now
+        } else if (action == BlockAction::FLASHING_2) {
             add_new_falling_blocks(new_actions, x, y, true);
         }
 

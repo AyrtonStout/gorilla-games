@@ -135,6 +135,24 @@ void Sdl2Runner::load_textures() {
     }
 
 
+    // Face block images
+    for (int i = 0; i < BlockType::COUNT; i++) {
+        auto block_type = (BlockType) i;
+        auto map_entry = Block::block_to_file_name.find(block_type);
+        auto file_name = map_entry->second + "-face.png";
+
+        SDL_Surface *image = IMG_Load((file_path + file_name).c_str());
+        if (!image) {
+            printf("IMG_Load: %s\n", IMG_GetError());
+            continue;
+        }
+        auto texture = SDL_CreateTextureFromSurface(renderer, image);
+        block_face_textures.emplace(block_type, texture);
+
+        SDL_FreeSurface(image);
+    }
+
+
     // Combo images
     for (int i = 4; i <= GameGrid::MAX_COMBO; i++) {
         SDL_Surface *image = IMG_Load((file_path + "combo/combo-" + to_string(i) + ".png").c_str());
@@ -268,6 +286,8 @@ void Sdl2Runner::update() {
                 } else {
                     texture = block_textures[block_type];
                 }
+            } else if (block->block_action == BlockAction::FLASHING_2) {
+                texture = block_face_textures[block_type];
             } else {
                 texture = block_textures[block_type];
             }

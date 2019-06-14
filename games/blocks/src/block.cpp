@@ -51,6 +51,8 @@ void Block::transition_to_state(BlockAction action) {
         action_frames_remaining = FRAMES_TO_SLIDE;
     } else if (action == BlockAction::FLASHING_1) {
         action_frames_remaining = FRAMES_OF_LIGHT;
+    } else if (action == BlockAction::FLASHING_2) {
+        action_frames_remaining = FRAMES_OF_FACE;
     } else if (action == BlockAction::SLIDE_FLOAT) {
         block_action = BlockAction::FLOATING;
         action_frames_remaining = FRAMES_TO_START_FALLING;
@@ -89,6 +91,12 @@ void Block::update() {
             break;
         }
         case BlockAction::FLASHING_1: {
+            if (action_done) {
+                transition_to_state(BlockAction::FLASHING_2);
+            }
+            return;
+        }
+        case BlockAction::FLASHING_2: {
             if (action_done) {
                 deleted = true;
             }

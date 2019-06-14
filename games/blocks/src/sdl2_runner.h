@@ -16,6 +16,7 @@ private:
     SDL_Renderer *renderer;
     map<BlockType, SDL_Texture*> block_textures;
     map<BlockType, SDL_Texture*> block_flash_textures;
+    map<BlockType, SDL_Texture*> block_face_textures;
     map<int, SDL_Texture*> combo_textures;
     map<int, SDL_Texture*> chain_textures;
     SDL_Texture *combo_unknown_texture;
