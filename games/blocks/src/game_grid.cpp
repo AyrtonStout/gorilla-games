@@ -253,11 +253,13 @@ void GameGrid::handle_combo_indications() {
 
 void GameGrid::handle_block_updates() {
     if (active_blocks.size() == 0) {
+        current_chain = 1; // TODO This is NOT accurate for how the game is supposed to do things. Still need to do it better
         return;
     }
 
     bool match_check_needed = false;
     auto new_actions = vector<shared_ptr<Block>>();
+    auto chain_check_blocks = vector<shared_ptr<Block>>();
     auto new_flash2_blocks = vector<shared_ptr<Block>>();
 
     // Tell all our blocks to update themselves before we do anything extra.
@@ -288,11 +290,7 @@ void GameGrid::handle_block_updates() {
                 match_check_needed = true;
             }
 
-            if (
-                    !current_block->deleted
-                    && current_block->y + 1 < GAME_HEIGHT
-                    && !blocks[current_block->y + 1][current_block->x]->can_prevent_falling()
-               ) {
+            if (current_block->y + 1 < GAME_HEIGHT && !blocks[current_block->y + 1][current_block->x]->can_prevent_falling()) {
                 // The block slid over a cliff. Add a watcher to make sure it will fall later
                 current_block->transition_to_state(BlockAction::SLIDE_FLOAT);
                 new_actions.push_back(current_block);
@@ -303,8 +301,8 @@ void GameGrid::handle_block_updates() {
             if (y + 1 < GAME_HEIGHT && !blocks[y + 1][x]->can_prevent_falling()) {
                 current_block->transition_to_state(BlockAction::FALLING);
                 new_actions.push_back(current_block);
+                add_new_falling_blocks(new_actions, current_block->x, current_block->y, false);
             }
-
         } else if (action == BlockAction::FALLING) {
             if (!blocks[y + 1][x]->can_prevent_falling()) {
                 swap_blocks(x, y, x, y + 1);
@@ -315,6 +313,11 @@ void GameGrid::handle_block_updates() {
                     current_block->transition_to_state(BlockAction::FALLING);
                     new_actions.push_back(current_block);
                 }
+            }
+
+            // This block but it could still chain on this turn. Check for chain status removal after
+            if (current_block->chainable) {
+                chain_check_blocks.push_back(current_block);
             }
         } else if (action == BlockAction::FLASHING_1) {
             new_flash2_blocks.push_back(current_block);
@@ -354,6 +357,12 @@ void GameGrid::handle_block_updates() {
 
     if (match_check_needed) {
         check_for_matches();
+    }
+
+    for (auto block : chain_check_blocks) {
+        if (block->block_action == BlockAction::NONE) {
+            block->chainable = false;
+        }
     }
 
     // TODO this probably has unintended behavior if a block is floating when it gets matched with other blocks...
