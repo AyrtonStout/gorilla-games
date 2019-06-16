@@ -41,6 +41,9 @@ vector<vector<shared_ptr<Block>>> GameBoardGenerator::generate_pattern() {
         blocks.emplace_back();
         for (int x = 0; x < GameGrid::GAME_WIDTH; x++) {
             shared_ptr<Block> block(new Block());
+            block->x = x;
+            block->y = y;
+
             if (pattern[y][x] == 0) {
                 block->deleted = true;
             } else {
@@ -56,11 +59,14 @@ vector<vector<shared_ptr<Block>>> GameBoardGenerator::generate_pattern() {
     return blocks;
 }
 
-vector<shared_ptr<Block>> GameBoardGenerator::generate_row() {
+vector<shared_ptr<Block>> GameBoardGenerator::generate_bottom_row() {
     auto blocks = vector<shared_ptr<Block>>();
 
     for (int x = 0; x < GameGrid::GAME_WIDTH; x++) {
         shared_ptr<Block> block(new Block());
+        block->x = x;
+        block->y = GameGrid::GAME_HEIGHT - 1;
+
         auto left_block = x > 0 ? blocks[x - 1] : nullptr;
 
         auto top_block = last_generated_row[x];

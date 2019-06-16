@@ -10,7 +10,7 @@ using namespace std;
 class GameBoardGenerator {
 public:
     vector<vector<shared_ptr<Block>>> generate_pattern();
-    vector<shared_ptr<Block>> generate_row();
+    vector<shared_ptr<Block>> generate_bottom_row();
 
 private:
     vector<shared_ptr<Block>> last_generated_row;

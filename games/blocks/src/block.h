@@ -34,6 +34,9 @@ public:
     bool inaccessible = false;
     bool chainable = false;
 
+    int x;
+    int y;
+
     static const int BLOCK_SIZE = 16;
 
     static const map<BlockType, string> block_to_file_name;

@@ -11,12 +11,6 @@
 
 using namespace std;
 
-struct active_block {
-    shared_ptr<Block> block;
-    int x;
-    int y;
-};
-
 enum class PopType {
     COMBO, CHAIN
 };
@@ -45,13 +39,13 @@ public:
 
     int get_stack_increase_height();
     vector<special_pop_indication> get_combo_indications();
-    vector<special_pop_indication> get_chain_indications();
     void move_cursor(Direction direction);
     void swap_panels(int x, int y);
+    void swap_blocks(int x1, int y1, int x2, int y2);
     void update();
 
 private:
-    vector<active_block> active_blocks;
+    vector<shared_ptr<Block>> active_blocks;
     vector<special_pop_indication> special_pop_indications;
     unordered_set<int> active_blocks_ids;
     GameBoardGenerator board_generator;
@@ -65,10 +59,10 @@ private:
     bool stack_raise_active = false;
 
     void check_for_matches();
-    bool add_active_block(active_block active_block);
-    vector<active_block> check_direction(int x, int y, Direction direction);
+    bool add_active_block(shared_ptr<Block> active_block);
+    vector<shared_ptr<Block>> check_direction(int x, int y, Direction direction);
 
-    void add_new_falling_blocks(vector<active_block> &new_actions, int y, int x, bool chainable);
+    void add_new_falling_blocks(vector<shared_ptr<Block>> &new_actions, int y, int x, bool chainable);
     void handle_block_updates();
     void handle_stack_increase();
     void handle_combo_indications();
