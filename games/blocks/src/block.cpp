@@ -44,7 +44,7 @@ int Block::get_id() {
     return id;
 }
 
-void Block::transition_to_state(BlockAction action) {
+void Block::transition_to_state(BlockAction action, int position) {
     block_action = action;
     action_done = false;
     if (action == BlockAction::SLIDE_LEFT || action == BlockAction::SLIDE_RIGHT) {
@@ -52,7 +52,7 @@ void Block::transition_to_state(BlockAction action) {
     } else if (action == BlockAction::FLASHING_1) {
         action_frames_remaining = FRAMES_OF_LIGHT;
     } else if (action == BlockAction::FLASHING_2) {
-        action_frames_remaining = FRAMES_OF_FACE;
+        action_frames_remaining = FRAMES_OF_FACE + position * FRAME_PER_POP;
     } else if (action == BlockAction::SLIDE_FLOAT) {
         block_action = BlockAction::FLOATING;
         action_frames_remaining = FRAMES_TO_START_FALLING;
@@ -62,6 +62,10 @@ void Block::transition_to_state(BlockAction action) {
     } else if (action == BlockAction::FALLING) {
         action_frames_remaining = FRAMES_TO_FALL;
     }
+}
+
+void Block::transition_to_state(BlockAction action) {
+    transition_to_state(action, 0);
 }
 
 void Block::update() {
@@ -89,18 +93,6 @@ void Block::update() {
             }
 
             break;
-        }
-        case BlockAction::FLASHING_1: {
-            if (action_done) {
-                transition_to_state(BlockAction::FLASHING_2);
-            }
-            return;
-        }
-        case BlockAction::FLASHING_2: {
-            if (action_done) {
-                deleted = true;
-            }
-            return;
         }
         default: {
             return;
@@ -130,12 +122,12 @@ bool Block::can_be_matched_with() {
 }
 
 bool Block::can_prevent_falling() {
-    return !deleted && block_action != BlockAction::FALLING;
+    return !deleted && block_action != BlockAction::FALLING && block_action != BlockAction::INVISIBLE_BUT_PASSABLE;
 }
 
 void Block::complete_action() {
     // A block might chain multiple actions together (like falling multiple spots) so this might not always be 0
-    if (action_frames_remaining == 0) {
+    if (action_frames_remaining == 0 && block_action != BlockAction::INVISIBLE && block_action != BlockAction::INVISIBLE_BUT_PASSABLE) {
         block_action = BlockAction::NONE;
     }
     action_done = false;
@@ -143,6 +135,10 @@ void Block::complete_action() {
 
 bool Block::is_action_done() {
     return action_done;
+}
+
+bool Block::is_visible() {
+    return !deleted && block_action != BlockAction::INVISIBLE && block_action != BlockAction::INVISIBLE_BUT_PASSABLE;
 }
 
 #pragma clang diagnostic pop

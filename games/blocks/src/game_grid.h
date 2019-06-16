@@ -8,6 +8,7 @@
 #include "block.h"
 #include "game_cursor.h"
 #include "game_board_generator.h"
+#include "block_group.h"
 
 using namespace std;
 
@@ -46,6 +47,7 @@ public:
 
 private:
     vector<shared_ptr<Block>> active_blocks;
+    map<int, vector<shared_ptr<Block>>> active_pop_groups;
     vector<special_pop_indication> special_pop_indications;
     unordered_set<int> active_blocks_ids;
     GameBoardGenerator board_generator;
@@ -66,8 +68,12 @@ private:
     void handle_block_updates();
     void handle_stack_increase();
     void handle_combo_indications();
+    void handle_flash2_transition(vector<shared_ptr<Block>> &new_flash2_blocks);
+    void handle_block_pop_finish(vector<shared_ptr<Block>> &new_actions, int pop_group_id);
 
     bool are_bottom_blocks_accessible();
+
+    int next_pop_group_id = 0;
 };
 
 

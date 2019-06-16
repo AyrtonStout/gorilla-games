@@ -7,7 +7,9 @@
 #include "block.h"
 
 class BlockGroup {
+public:
     vector<shared_ptr<Block>> blocks;
+    BlockAction block_action;
 };
 
 

@@ -10,7 +10,8 @@ using namespace std;
 // As much as I would love to use a more robust Enum Class here, it makes random access more cumbersome
 enum BlockType { L_BLUE, D_BLUE, RED, GREEN, PURPLE, YELLOW, COUNT };
 
-enum class BlockAction { NONE, SLIDE_LEFT, SLIDE_RIGHT, FALLING, SLIDE_FLOAT, POP_FLOAT, FLOATING, FLASHING_1, FLASHING_2 };
+enum class BlockAction { NONE, SLIDE_LEFT, SLIDE_RIGHT, FALLING, SLIDE_FLOAT, POP_FLOAT, FLOATING,
+        FLASHING_1, FLASHING_2, INVISIBLE, INVISIBLE_BUT_PASSABLE };
 
 class Block {
 
@@ -24,11 +25,13 @@ public:
     int get_render_offset_y();
     int get_action_frames_remaining();
     bool is_action_done();
+    void transition_to_state(BlockAction action, int position);
     void transition_to_state(BlockAction action);
     void complete_action();
     void update();
     bool can_be_matched_with();
     bool can_prevent_falling();
+    bool is_visible();
 
     bool deleted = false;
     bool inaccessible = false;
@@ -36,6 +39,8 @@ public:
 
     int x;
     int y;
+
+    int pop_group_id; // When blocks pop they interact differently with blocks that popped at the same time as them
 
     static const int BLOCK_SIZE = 16;
 
