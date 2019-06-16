@@ -8,7 +8,6 @@
 #include "block.h"
 #include "game_cursor.h"
 #include "game_board_generator.h"
-#include "block_group.h"
 
 using namespace std;
 
