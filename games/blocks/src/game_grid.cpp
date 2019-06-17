@@ -162,14 +162,18 @@ bool GameGrid::add_active_block(shared_ptr<Block> active_block) {
     return false;
 }
 
-void GameGrid::add_new_falling_blocks(vector<shared_ptr<Block>> &new_actions, int x, int y, bool chainable) {
+void GameGrid::add_new_falling_blocks(vector<shared_ptr<Block>> &new_actions, int x, int y, bool chainable, bool pause) {
     // Go up from the moved / popped block, telling every contiguous block above it to get ready to fall
     for (int y_to_check = y - 1; y_to_check >= 0; y_to_check--) {
         auto block_to_check = blocks[y_to_check][x];
         if (block_to_check->deleted || block_to_check->block_action != BlockAction::NONE) {
             break;
         } else {
-            block_to_check->transition_to_state(BlockAction::POP_FLOAT);
+            if (pause) {
+                block_to_check->transition_to_state(BlockAction::POP_FLOAT);
+            } else {
+                block_to_check->transition_to_state(BlockAction::FALLING);
+            }
             block_to_check->chainable = chainable;
             new_actions.push_back(block_to_check);
         }
@@ -296,12 +300,12 @@ void GameGrid::handle_block_updates() {
                 new_actions.push_back(current_block);
             }
 
-            add_new_falling_blocks(new_actions, current_block->x, current_block->y, false);
+            add_new_falling_blocks(new_actions, current_block->x, current_block->y, false, true);
         } else if (action == BlockAction::FLOATING) {
             if (y + 1 < GAME_HEIGHT && !blocks[y + 1][x]->can_prevent_falling()) {
                 current_block->transition_to_state(BlockAction::FALLING);
                 new_actions.push_back(current_block);
-                add_new_falling_blocks(new_actions, current_block->x, current_block->y, false);
+                add_new_falling_blocks(new_actions, current_block->x, current_block->y, false, false);
             }
         } else if (action == BlockAction::FALLING) {
             if (!blocks[y + 1][x]->can_prevent_falling()) {
@@ -427,7 +431,7 @@ void GameGrid::handle_block_pop_finish(vector<shared_ptr<Block>> &new_actions, i
     }
 
     for (auto block : pop_group_blocks) {
-        add_new_falling_blocks(new_actions, block->x, block->y, true);
+        add_new_falling_blocks(new_actions, block->x, block->y, true, true);
     }
 
     active_pop_groups.erase(pop_group_id);

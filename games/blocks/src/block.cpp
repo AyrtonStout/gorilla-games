@@ -122,6 +122,11 @@ bool Block::can_be_matched_with() {
 }
 
 bool Block::can_prevent_falling() {
+    // Even deleted "sliding" blocks stop a fall, as it means we are swapping a block into that empty space
+    if (block_action == BlockAction::SLIDE_LEFT || block_action == BlockAction::SLIDE_RIGHT) {
+        return true;
+    }
+
     return !deleted && block_action != BlockAction::FALLING && block_action != BlockAction::INVISIBLE_BUT_PASSABLE;
 }
 

@@ -63,7 +63,7 @@ private:
     bool add_active_block(shared_ptr<Block> active_block);
     vector<shared_ptr<Block>> check_direction(int x, int y, Direction direction);
 
-    void add_new_falling_blocks(vector<shared_ptr<Block>> &new_actions, int y, int x, bool chainable);
+    void add_new_falling_blocks(vector<shared_ptr<Block>> &new_actions, int y, int x, bool chainable, bool pause);
     void handle_block_updates();
     void handle_stack_increase();
     void handle_combo_indications();
