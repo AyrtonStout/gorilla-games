@@ -36,6 +36,7 @@ private:
     void load_textures();
     void process_input();
     void process_keypress(SDL_Event event);
+    int get_draw_point_for_block_height(int coordinate);
 };
 
 

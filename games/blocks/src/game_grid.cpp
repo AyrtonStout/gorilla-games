@@ -131,7 +131,7 @@ void GameGrid::check_for_matches() {
                         .pop_type = PopType::COMBO,
                         .x = left_pop_coordinate,
                         .y = top_pop_coordinate,
-                        .frames_remaining = 60,
+                        .frames_remaining = SPECIAL_FRAME_START_DURATION,
                         .both_special_triggered = chained
                 }
         );
@@ -144,7 +144,7 @@ void GameGrid::check_for_matches() {
                         .pop_type = PopType::CHAIN,
                         .x = left_pop_coordinate,
                         .y = top_pop_coordinate,
-                        .frames_remaining = 60,
+                        .frames_remaining = SPECIAL_FRAME_START_DURATION,
                         .both_special_triggered = combo_size > 3
                 }
         );

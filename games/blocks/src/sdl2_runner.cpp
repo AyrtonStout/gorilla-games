@@ -247,6 +247,24 @@ void Sdl2Runner::process_input() {
     }
 }
 
+int Sdl2Runner::get_draw_point_for_block_height(int coordinate) {
+    return (coordinate * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING;
+}
+
+int get_special_indicator_animation_offset(int frames_remaining) {
+    int fast_appearance_offset = 7 - GameGrid::SPECIAL_FRAME_START_DURATION + frames_remaining;
+    if (fast_appearance_offset < 0) {
+        fast_appearance_offset = 0;
+    }
+
+    int slow_appearance_offset = 25 - GameGrid::SPECIAL_FRAME_START_DURATION + frames_remaining;
+    if (slow_appearance_offset < 0) {
+        slow_appearance_offset = 0;
+    }
+
+    return fast_appearance_offset + (slow_appearance_offset / 2);
+}
+
 void Sdl2Runner::update() {
     // FIXME This shouldn't be the responsibility of SDL to do this update
     game_state->game_grid.update();
@@ -303,7 +321,7 @@ void Sdl2Runner::update() {
 
     SDL_Rect cursor_rect = {
             .x = (cursor.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING - 7,
-            .y = ((cursor.y + 1) * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING - 7,
+            .y = get_draw_point_for_block_height(cursor.y + 1) - 7,
             .w = GameCursor::CURSOR_WIDTH * SCALING,
             .h = GameCursor::CURSOR_HEIGHT * SCALING
     };
@@ -312,9 +330,17 @@ void Sdl2Runner::update() {
     SDL_RenderCopy(renderer, cursor_texture, nullptr, &cursor_rect);
 
     for (auto indicator : game_state->game_grid.get_combo_indications()) {
+        int double_panel_offset = 0;
+        if (indicator.both_special_triggered && indicator.pop_type == PopType::CHAIN) {
+            double_panel_offset = (Block::BLOCK_SIZE + 1) * SCALING;
+        }
+
+        // Make the indicator kind of smoothly move up after it appears
+        int animation_offset = get_special_indicator_animation_offset(indicator.frames_remaining);
+
         SDL_Rect rect = {
                 .x = (indicator.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
-                .y = (indicator.y * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING,
+                .y = get_draw_point_for_block_height(indicator.y) - double_panel_offset + animation_offset,
                 .w = Block::BLOCK_SIZE * SCALING,
                 .h = Block::BLOCK_SIZE * SCALING
         };
