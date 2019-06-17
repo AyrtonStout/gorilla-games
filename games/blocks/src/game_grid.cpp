@@ -364,7 +364,22 @@ void GameGrid::handle_block_updates() {
     }
 
     for (auto block : chain_check_blocks) {
-        if (block->block_action == BlockAction::NONE) {
+        if (block->block_action != BlockAction::NONE) {
+            continue;
+        }
+        if (block->y + 1 >= GameGrid::GAME_HEIGHT) {
+            block->chainable = false;
+            continue;
+        }
+
+        auto below_block = blocks[block->y + 1][block->x];
+
+        // If our chainable block fell on top of a block that was sliding or about to fall, duplicate the chainable property
+        auto action = below_block->block_action;
+        // FIXME There is a bug here. If it's a block that is SLIDING, we need to grab the OTHER block sliding INTO this position instead!
+        if (action == BlockAction::SLIDE_RIGHT || action == BlockAction::SLIDE_LEFT || action == BlockAction::FLOATING) {
+            below_block->chainable = true;
+        } else {
             block->chainable = false;
         }
     }
