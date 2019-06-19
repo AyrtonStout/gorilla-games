@@ -111,7 +111,6 @@ bool Block::can_be_matched_with() {
 
     switch (block_action) {
         case BlockAction::NONE:
-        case BlockAction::FLOATING:
             return true;
         case BlockAction::FLASHING_1:
             // This means the block was JUST told to start popping this frame. So it's still "matchable" to other blocks around it

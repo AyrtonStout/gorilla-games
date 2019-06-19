@@ -275,8 +275,8 @@ void GameGrid::handle_block_updates() {
     for (int i = 0; i < active_blocks.size(); i++) {
 
         auto current_block = active_blocks[i];
-        int x = current_block->x;
-        int y = current_block->y;
+        int x = current_block->x; // this x and y represent the original coordinates of the block
+        int y = current_block->y; // they might change later in the update loop due to jank
 
         if (!current_block->is_action_done()) {
             continue; // This block is still doing an action. Do nothing more with it
@@ -286,12 +286,15 @@ void GameGrid::handle_block_updates() {
 
         // We now know that the block is done doing its action. Do some stuff additional based off what kind of action it finished
         if (action == BlockAction::SLIDE_RIGHT || action == BlockAction::SLIDE_LEFT) {
+            // CAUTION --- JANK AHEAD ----
             // The block finished sliding to its new location. Swap it with the block next to it
             // Don't check for SLIDE_LEFT, as we only need to do the swap for one completed block
             // Empty blocks still count as blocks, so there will always be a SLIDE_LEFT and SLIDE_RIGHT
             if (action == BlockAction::SLIDE_RIGHT) {
                 swap_blocks(x, y, x + 1, y);
                 match_check_needed = true;
+            } else {
+                x = x + 1; // Reset x to the original position of the block since the SLIDE_RIGHT block changed it on us
             }
 
             if (current_block->y + 1 < GAME_HEIGHT && !blocks[current_block->y + 1][current_block->x]->can_prevent_falling()) {
@@ -300,7 +303,14 @@ void GameGrid::handle_block_updates() {
                 new_actions.push_back(current_block);
             }
 
-            add_new_falling_blocks(new_actions, current_block->x, current_block->y, false, true);
+            // This is the block we just swapped with. If we swapped with a deleted block, tell the blocks above it to fall
+            shared_ptr<Block> adjacent_block = blocks[y][x];
+
+            if (adjacent_block->deleted) {
+                cout << "Adjacent was deleted\n";
+                cout << "Adding X: " << x << " Y: " << y << "\n";
+                add_new_falling_blocks(new_actions, x, y, false, true);
+            }
         } else if (action == BlockAction::FLOATING) {
             if (y + 1 < GAME_HEIGHT && !blocks[y + 1][x]->can_prevent_falling()) {
                 current_block->transition_to_state(BlockAction::FALLING);
