@@ -307,8 +307,6 @@ void GameGrid::handle_block_updates() {
             shared_ptr<Block> adjacent_block = blocks[y][x];
 
             if (adjacent_block->deleted) {
-                cout << "Adjacent was deleted\n";
-                cout << "Adding X: " << x << " Y: " << y << "\n";
                 add_new_falling_blocks(new_actions, x, y, false, true);
             }
         } else if (action == BlockAction::FLOATING) {
