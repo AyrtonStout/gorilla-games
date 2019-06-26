@@ -26,6 +26,7 @@ private:
     const int SCALING = 3;
     const int FULL_GAME_WIDTH = 256;
     const int FULL_GAME_HEIGHT = 224;
+    const int MULTIPLAYER_GRID_SPACING = 40;
 
     void load_textures();
     void process_input();

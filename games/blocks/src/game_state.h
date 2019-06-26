@@ -6,11 +6,12 @@
 
 class GameState {
 public:
-    GameGrid game_grid;
+    GameGrid p1_game_grid;
+    GameGrid p2_game_grid;
     int seed;
     int num_players;
 
-    GameState();
+    explicit GameState(int num_players);
     void update();
 };
 

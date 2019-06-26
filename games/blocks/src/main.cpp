@@ -12,7 +12,7 @@
 #include <emscripten/bind.h>
 #endif
 
-GameState state;
+GameState state = GameState(2);
 
 #ifdef __EMSCRIPTEN__
 EM_JS(void, call_alert, (), {
@@ -44,8 +44,6 @@ void updateWrapper(void *runner) {
 
 
 int main() {
-
-    state = GameState();
     auto runner = Sdl2Runner(&state);
 
     update_group updates = { .state = &state, .runner = &runner };

@@ -21,8 +21,10 @@ const string pathPrefix = "./";
 Sdl2Runner::Sdl2Runner(GameState *game_state) {
     this->game_state = game_state;
 
-    this->p1_renderer = new Sdl2GridRenderer(&this->textures, &game_state->game_grid);
-    this->p2_renderer = nullptr;
+    this->p1_renderer = new Sdl2GridRenderer(&this->textures, &game_state->p1_game_grid, game_state->num_players, 1);
+    if (game_state->num_players == 2) {
+        this->p2_renderer = new Sdl2GridRenderer(&this->textures, &game_state->p2_game_grid, game_state->num_players, 2);
+    }
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -64,6 +66,17 @@ void Sdl2Runner::load_textures() {
 
     textures.background_texture = SDL_CreateTextureFromSurface(renderer, background_image);
     SDL_FreeSurface(background_image);
+
+
+    // Background 2 Player
+    SDL_Surface *background_image_2player = IMG_Load((file_path + "game-background-2p.png").c_str());
+    if (!background_image_2player) {
+        printf("IMG_Load: %s\n", IMG_GetError());
+        return;
+    }
+
+    textures.background_texture_2player = SDL_CreateTextureFromSurface(renderer, background_image_2player);
+    SDL_FreeSurface(background_image_2player);
 
 
     // Black tint
@@ -178,8 +191,8 @@ void Sdl2Runner::load_textures() {
 }
 
 void Sdl2Runner::process_keypress(SDL_Event event) {
-    auto cursor = &game_state->game_grid.game_cursor;
-    auto game_grid = &game_state->game_grid;
+    auto cursor = &game_state->p1_game_grid.game_cursor;
+    auto game_grid = &game_state->p1_game_grid;
 
     switch (event.key.keysym.sym)
     {
@@ -211,7 +224,7 @@ void Sdl2Runner::process_input() {
             case SDL_KEYUP:
                 switch (event.key.keysym.sym) {
                     case SDLK_x:
-                        game_state->game_grid.stack_raise_requested = false;
+                        game_state->p1_game_grid.stack_raise_requested = false;
                         break;
                 }
                 break;
@@ -229,7 +242,29 @@ bool Sdl2Runner::update() {
 
     SDL_RenderClear(renderer);
 
-    p1_renderer->render(renderer);
+    // TODO Background rect shouldn't ever change. might not need to redo this every update but not sure the best way to not do that
+    SDL_Rect background_rect = {
+            .x = 0,
+            .y = 0,
+            .w = FULL_GAME_WIDTH * SCALING,
+            .h = FULL_GAME_HEIGHT * SCALING
+    };
+
+    int single_player_start_width = (FULL_GAME_WIDTH / 2) - (Sdl2GridRenderer::GRID_WIDTH / 2);
+    int multiplayer_start_width = (FULL_GAME_WIDTH / 2) - Sdl2GridRenderer::GRID_WIDTH - (MULTIPLAYER_GRID_SPACING / 2);
+    int p1_render_offset = this->game_state->num_players == 1 ? single_player_start_width : multiplayer_start_width;
+
+    p1_renderer->render(renderer, p1_render_offset, SCALING);
+
+    if (game_state->num_players == 2) {
+        p2_renderer->render(renderer, (FULL_GAME_WIDTH / 2) + (MULTIPLAYER_GRID_SPACING / 2), SCALING);
+    }
+
+    if (game_state->num_players == 1) {
+        SDL_RenderCopy(renderer, textures.background_texture, nullptr, &background_rect);
+    } else {
+        SDL_RenderCopy(renderer, textures.background_texture_2player, nullptr, &background_rect);
+    }
 
     SDL_RenderPresent(renderer);
 

@@ -18,6 +18,7 @@ struct sdl_game_textures {
     SDL_Texture *chain_unknown_texture;
     SDL_Texture *cursor_texture;
     SDL_Texture *background_texture;
+    SDL_Texture *background_texture_2player;
     SDL_Texture *black_tint_texture;
 };
 

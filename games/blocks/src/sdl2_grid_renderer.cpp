@@ -15,14 +15,16 @@ const string pathPrefix = "./";
 #endif
 
 
-Sdl2GridRenderer::Sdl2GridRenderer(sdl_game_textures *textures, GameGrid *game_grid) {
+Sdl2GridRenderer::Sdl2GridRenderer(sdl_game_textures *textures, GameGrid *game_grid, int num_players, int player) {
     this->textures = textures;
     this->game_grid = game_grid;
+    this->num_players = num_players;
+    this->player = player;
 }
 
 
-int Sdl2GridRenderer::get_draw_point_for_block_height(int coordinate) {
-    return (coordinate * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_grid->get_stack_increase_height()) * SCALING;
+int Sdl2GridRenderer::get_draw_point_for_block_height(int coordinate, int scaling) {
+    return (coordinate * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_grid->get_stack_increase_height()) * scaling;
 }
 
 int get_special_indicator_animation_offset(int frames_remaining) {
@@ -39,15 +41,7 @@ int get_special_indicator_animation_offset(int frames_remaining) {
     return fast_appearance_offset + (slow_appearance_offset / 2);
 }
 
-void Sdl2GridRenderer::render(SDL_Renderer *renderer) {
-    // TODO Background rect shouldn't ever change. might not need to redo this every update but not sure the best way to not do that
-    SDL_Rect background_rect = {
-            .x = 0,
-            .y = 0,
-            .w = BACKGROUND_WIDTH * SCALING,
-            .h = BACKGROUND_HEIGHT * SCALING
-    };
-
+void Sdl2GridRenderer::render(SDL_Renderer *renderer, int start_x, int scaling) {
     for (int y = 0; y < game_grid->blocks.size(); y++) {
         for (int x = 0; x < game_grid->blocks[0].size(); x++) {
             auto block = game_grid->blocks[y][x];
@@ -56,10 +50,10 @@ void Sdl2GridRenderer::render(SDL_Renderer *renderer) {
             }
 
             SDL_Rect rect = {
-                    .x = (x * Block::BLOCK_SIZE + block->get_render_offset_x() + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
-                    .y = ((y + 1) * Block::BLOCK_SIZE + block->get_render_offset_y() + BACKGROUND_GAME_HEIGHT_OFFSET - game_grid->get_stack_increase_height()) * SCALING,
-                    .w = Block::BLOCK_SIZE * SCALING,
-                    .h = Block::BLOCK_SIZE * SCALING
+                    .x = (x * Block::BLOCK_SIZE + block->get_render_offset_x() + start_x) * scaling,
+                    .y = ((y + 1) * Block::BLOCK_SIZE + block->get_render_offset_y() + BACKGROUND_GAME_HEIGHT_OFFSET - game_grid->get_stack_increase_height()) * scaling,
+                    .w = Block::BLOCK_SIZE * scaling,
+                    .h = Block::BLOCK_SIZE * scaling
             };
 
             BlockType block_type = block->block_type;
@@ -87,29 +81,28 @@ void Sdl2GridRenderer::render(SDL_Renderer *renderer) {
     auto cursor = game_grid->game_cursor;
 
     SDL_Rect cursor_rect = {
-            .x = (cursor.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING - 7,
-            .y = get_draw_point_for_block_height(cursor.y + 1) - 7,
-            .w = GameCursor::CURSOR_WIDTH * SCALING,
-            .h = GameCursor::CURSOR_HEIGHT * SCALING
+            .x = (cursor.x * Block::BLOCK_SIZE + start_x) * scaling - 7,
+            .y = get_draw_point_for_block_height(cursor.y + 1, scaling) - 7,
+            .w = GameCursor::CURSOR_WIDTH * scaling,
+            .h = GameCursor::CURSOR_HEIGHT * scaling
     };
 
-    SDL_RenderCopy(renderer, textures->background_texture, nullptr, &background_rect);
     SDL_RenderCopy(renderer, textures->cursor_texture, nullptr, &cursor_rect);
 
     for (auto indicator : game_grid->get_combo_indications()) {
         int double_panel_offset = 0;
         if (indicator.both_special_triggered && indicator.pop_type == PopType::CHAIN) {
-            double_panel_offset = (Block::BLOCK_SIZE + 1) * SCALING;
+            double_panel_offset = (Block::BLOCK_SIZE + 1) * scaling;
         }
 
         // Make the indicator kind of smoothly move up after it appears
         int animation_offset = get_special_indicator_animation_offset(indicator.frames_remaining);
 
         SDL_Rect rect = {
-                .x = (indicator.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
-                .y = get_draw_point_for_block_height(indicator.y) - double_panel_offset + animation_offset,
-                .w = Block::BLOCK_SIZE * SCALING,
-                .h = Block::BLOCK_SIZE * SCALING
+                .x = (indicator.x * Block::BLOCK_SIZE + start_x) * scaling,
+                .y = get_draw_point_for_block_height(indicator.y, scaling) - double_panel_offset + animation_offset,
+                .w = Block::BLOCK_SIZE * scaling,
+                .h = Block::BLOCK_SIZE * scaling
         };
 
         auto texture = indicator.pop_type == PopType::COMBO ? textures->combo_textures[indicator.size] : textures->chain_textures[indicator.size];

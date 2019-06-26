@@ -9,19 +9,20 @@
 
 class Sdl2GridRenderer {
 public:
-    Sdl2GridRenderer(sdl_game_textures *textures, GameGrid *game_grid);
-    void render(SDL_Renderer *renderer);
+    static const int GRID_WIDTH = Block::BLOCK_SIZE * GameGrid::GAME_WIDTH;
+
+    Sdl2GridRenderer(sdl_game_textures *textures, GameGrid *game_grid, int num_players, int player);
+    void render(SDL_Renderer *renderer, int start_x, int scaling);
 private:
     sdl_game_textures *textures;
     GameGrid *game_grid;
+    int num_players;
+    int player;
 
-    const int SCALING = 3;
-    const int BACKGROUND_WIDTH = 256;
     const int BACKGROUND_HEIGHT = 224;
-    const int BACKGROUND_GAME_WIDTH_OFFSET = 80;
     const int BACKGROUND_GAME_HEIGHT_OFFSET = 23;
 
-    int get_draw_point_for_block_height(int coordinate);
+    int get_draw_point_for_block_height(int coordinate, int scaling);
 };
 
 
