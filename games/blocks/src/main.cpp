@@ -14,11 +14,9 @@
 GameState state;
 
 #ifdef __EMSCRIPTEN__
-    EM_JS(void, test_js, (), {
-        Module.print('Hello from javascript!\n');
-    })
-
- auto script = R"(Module.print('Hello from javascript!\n'))";
+EM_JS(void, call_alert, (), {
+  globalTestJs();
+});
 #endif
 
 int main() {
@@ -27,8 +25,7 @@ int main() {
     Sdl2Runner(&state).run();
 
 #ifdef __EMSCRIPTEN__
-    test_js();
-    emscripten_run_script(script);
+    call_alert();
 #endif
 
     return 0;
