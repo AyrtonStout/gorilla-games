@@ -27,8 +27,8 @@ void updateWrapper(void *runner) {
 }
 
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
-Sdl2Runner::Sdl2Runner(GameState *game_state) {
-    this->game_state = game_state;
+Sdl2Runner::Sdl2Runner(GameGrid *game_grid) {
+    this->game_grid = game_grid;
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -200,23 +200,22 @@ void Sdl2Runner::load_textures() {
 }
 
 void Sdl2Runner::process_keypress(SDL_Event event) {
-    auto grid = &game_state->game_grid;
-    auto cursor = &game_state->game_grid.game_cursor;
+    auto cursor = &game_grid->game_cursor;
 
     switch (event.key.keysym.sym)
     {
         case SDLK_UP:
-            grid->move_cursor(Direction::UP); break;
+            game_grid->move_cursor(Direction::UP); break;
         case SDLK_DOWN:
-            grid->move_cursor(Direction::DOWN); break;
+            game_grid->move_cursor(Direction::DOWN); break;
         case SDLK_LEFT:
-            grid->move_cursor(Direction::LEFT); break;
+            game_grid->move_cursor(Direction::LEFT); break;
         case SDLK_RIGHT:
-            grid->move_cursor(Direction::RIGHT); break;
+            game_grid->move_cursor(Direction::RIGHT); break;
         case SDLK_z:
-            game_state->game_grid.swap_panels(cursor->x, cursor->y); break;
+            game_grid->swap_panels(cursor->x, cursor->y); break;
         case SDLK_x:
-            game_state->game_grid.stack_raise_requested = true;
+            game_grid->stack_raise_requested = true;
         default:
             break;
     }
@@ -234,7 +233,7 @@ void Sdl2Runner::process_input() {
             case SDL_KEYUP:
                 switch (event.key.keysym.sym) {
                     case SDLK_x:
-                        game_state->game_grid.stack_raise_requested = false;
+                        game_grid->stack_raise_requested = false;
                         break;
                 }
                 break;
@@ -248,7 +247,7 @@ void Sdl2Runner::process_input() {
 }
 
 int Sdl2Runner::get_draw_point_for_block_height(int coordinate) {
-    return (coordinate * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING;
+    return (coordinate * Block::BLOCK_SIZE + BACKGROUND_GAME_HEIGHT_OFFSET - game_grid->get_stack_increase_height()) * SCALING;
 }
 
 int get_special_indicator_animation_offset(int frames_remaining) {
@@ -267,7 +266,7 @@ int get_special_indicator_animation_offset(int frames_remaining) {
 
 void Sdl2Runner::update() {
     // FIXME This shouldn't be the responsibility of SDL to do this update
-    game_state->game_grid.update();
+    game_grid->update();
 
     process_input();
 
@@ -281,16 +280,16 @@ void Sdl2Runner::update() {
             .h = BACKGROUND_HEIGHT * SCALING
     };
 
-    for (int y = 0; y < game_state->game_grid.blocks.size(); y++) {
-        for (int x = 0; x < game_state->game_grid.blocks[0].size(); x++) {
-            auto block = game_state->game_grid.blocks[y][x];
+    for (int y = 0; y < game_grid->blocks.size(); y++) {
+        for (int x = 0; x < game_grid->blocks[0].size(); x++) {
+            auto block = game_grid->blocks[y][x];
             if (!block->is_visible()) {
                 continue;
             }
 
             SDL_Rect rect = {
                     .x = (x * Block::BLOCK_SIZE + block->get_render_offset_x() + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING,
-                    .y = ((y + 1) * Block::BLOCK_SIZE + block->get_render_offset_y() + BACKGROUND_GAME_HEIGHT_OFFSET - game_state->game_grid.get_stack_increase_height()) * SCALING,
+                    .y = ((y + 1) * Block::BLOCK_SIZE + block->get_render_offset_y() + BACKGROUND_GAME_HEIGHT_OFFSET - game_grid->get_stack_increase_height()) * SCALING,
                     .w = Block::BLOCK_SIZE * SCALING,
                     .h = Block::BLOCK_SIZE * SCALING
             };
@@ -317,7 +316,7 @@ void Sdl2Runner::update() {
         }
     }
 
-    auto cursor = game_state->game_grid.game_cursor;
+    auto cursor = game_grid->game_cursor;
 
     SDL_Rect cursor_rect = {
             .x = (cursor.x * Block::BLOCK_SIZE + BACKGROUND_GAME_WIDTH_OFFSET) * SCALING - 7,
@@ -329,7 +328,7 @@ void Sdl2Runner::update() {
     SDL_RenderCopy(renderer, background_texture, nullptr, &background_rect);
     SDL_RenderCopy(renderer, cursor_texture, nullptr, &cursor_rect);
 
-    for (auto indicator : game_state->game_grid.get_combo_indications()) {
+    for (auto indicator : game_grid->get_combo_indications()) {
         int double_panel_offset = 0;
         if (indicator.both_special_triggered && indicator.pop_type == PopType::CHAIN) {
             double_panel_offset = (Block::BLOCK_SIZE + 1) * SCALING;

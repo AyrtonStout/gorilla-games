@@ -22,7 +22,7 @@ EM_JS(void, call_alert, (), {
 int main() {
     state = GameState();
 
-    Sdl2Runner(&state).run();
+    Sdl2Runner(&state.game_grid).run();
 
 #ifdef __EMSCRIPTEN__
     call_alert();

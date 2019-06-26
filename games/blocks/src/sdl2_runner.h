@@ -9,7 +9,7 @@
 
 class Sdl2Runner {
 public:
-    Sdl2Runner(GameState *game_state);
+    Sdl2Runner(GameGrid *game_grid);
     void run();
     void update();
 private:
@@ -24,7 +24,7 @@ private:
     SDL_Texture *cursor_texture;
     SDL_Texture *background_texture;
     SDL_Texture *black_tint_texture;
-    GameState *game_state;
+    GameGrid *game_grid;
     bool running = true;
 
     const int SCALING = 3;
