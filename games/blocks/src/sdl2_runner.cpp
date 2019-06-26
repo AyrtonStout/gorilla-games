@@ -191,23 +191,45 @@ void Sdl2Runner::load_textures() {
 }
 
 void Sdl2Runner::process_keypress(SDL_Event event) {
-    auto cursor = &game_state->p1_game_grid.game_cursor;
-    auto game_grid = &game_state->p1_game_grid;
+    auto p1_cursor = &game_state->p1_game_grid.game_cursor;
+    auto p2_cursor = &game_state->p2_game_grid.game_cursor;
+    auto p1_game_grid = &game_state->p1_game_grid;
+    auto p2_game_grid = &game_state->p2_game_grid;
 
-    switch (event.key.keysym.sym)
-    {
+    switch (event.key.keysym.sym) {
         case SDLK_UP:
-            game_grid->move_cursor(Direction::UP); break;
+            p1_game_grid->move_cursor(Direction::UP); break;
         case SDLK_DOWN:
-            game_grid->move_cursor(Direction::DOWN); break;
+            p1_game_grid->move_cursor(Direction::DOWN); break;
         case SDLK_LEFT:
-            game_grid->move_cursor(Direction::LEFT); break;
+            p1_game_grid->move_cursor(Direction::LEFT); break;
         case SDLK_RIGHT:
-            game_grid->move_cursor(Direction::RIGHT); break;
+            p1_game_grid->move_cursor(Direction::RIGHT); break;
         case SDLK_z:
-            game_grid->swap_panels(cursor->x, cursor->y); break;
+            p1_game_grid->swap_panels(p1_cursor->x, p1_cursor->y); break;
         case SDLK_x:
-            game_grid->stack_raise_requested = true;
+            p1_game_grid->stack_raise_requested = true;
+        default:
+            break;
+    }
+
+    if (game_state->num_players == 1) {
+        return;
+    }
+
+    switch (event.key.keysym.sym) {
+        case SDLK_KP_8:
+            p2_game_grid->move_cursor(Direction::UP); break;
+        case SDLK_KP_5:
+            p2_game_grid->move_cursor(Direction::DOWN); break;
+        case SDLK_KP_4:
+            p2_game_grid->move_cursor(Direction::LEFT); break;
+        case SDLK_KP_6:
+            p2_game_grid->move_cursor(Direction::RIGHT); break;
+        case SDLK_KP_0:
+            p2_game_grid->swap_panels(p2_cursor->x, p2_cursor->y); break;
+        case SDLK_KP_ENTER:
+            p2_game_grid->stack_raise_requested = true;
         default:
             break;
     }
