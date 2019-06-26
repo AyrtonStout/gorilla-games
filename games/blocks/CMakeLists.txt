@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-add_executable(${PROJECT_NAME} src/main.cpp src/game_cursor.cpp src/game_cursor.h src/direction.h src/block.cpp src/block.h src/game_grid.cpp src/game_grid.h src/game_state.cpp src/game_state.h src/sdl2_runner.cpp src/sdl2_runner.h src/frame_timing.h src/game_board_generator.cpp src/game_board_generator.h)
+add_executable(${PROJECT_NAME} src/main.cpp src/game_cursor.cpp src/game_cursor.h src/direction.h src/block.cpp src/block.h src/game_grid.cpp src/game_grid.h src/game_state.cpp src/game_state.h src/sdl2_runner.cpp src/sdl2_runner.h src/frame_timing.h src/game_board_generator.cpp src/game_board_generator.h src/sdl2_grid_renderer.h src/sdl2_grid_renderer.cpp src/sdl_game_textures.h)
 
 INCLUDE(FindPkgConfig)
 

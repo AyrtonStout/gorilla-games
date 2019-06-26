@@ -8,6 +8,7 @@ class GameState {
 public:
     GameGrid game_grid;
     int seed;
+    int num_players;
 
     GameState();
     void update();

@@ -46,7 +46,7 @@ void updateWrapper(void *runner) {
 int main() {
 
     state = GameState();
-    auto runner = Sdl2Runner(&state.game_grid);
+    auto runner = Sdl2Runner(&state);
 
     update_group updates = { .state = &state, .runner = &runner };
 
