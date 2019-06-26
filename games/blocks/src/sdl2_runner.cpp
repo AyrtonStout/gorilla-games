@@ -17,15 +17,6 @@ const string pathPrefix = "./";
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 
-
-// This is an unfortunate necessity to the fact that the `emscripten_set_main_loop` series of functions
-// want a 'pointer-to-function', and class functions are considered 'pointer-to-member-function'.
-// So we have to wrap the member function call in a non-member function call
-void updateWrapper(void *runner) {
-    auto sdl2_runner = (Sdl2Runner*) runner;
-    sdl2_runner->update();
-}
-
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
 Sdl2Runner::Sdl2Runner(GameGrid *game_grid) {
     this->game_grid = game_grid;
@@ -44,22 +35,6 @@ Sdl2Runner::Sdl2Runner(GameGrid *game_grid) {
 
     // Show what is in the renderer
     SDL_RenderPresent(renderer);
-}
-#pragma clang diagnostic pop
-
-// TODO need to handle a separate update interval for Emscripten somehow
-// Might possibly want to use "emscripten_async_call" for rendering, and run game updates in a new thread?
-void Sdl2Runner::run() {
-#ifdef __EMSCRIPTEN__
-    // If using emscripten, have our main loop be browser friendly
-  emscripten_set_main_loop_arg(updateWrapper, this, 0, 1);
-#else
-    // Otherwise, do a janky normal loop
-    while (running) {
-        update();
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
-    }
-#endif
 }
 
 
@@ -264,10 +239,7 @@ int get_special_indicator_animation_offset(int frames_remaining) {
     return fast_appearance_offset + (slow_appearance_offset / 2);
 }
 
-void Sdl2Runner::update() {
-    // FIXME This shouldn't be the responsibility of SDL to do this update
-    game_grid->update();
-
+bool Sdl2Runner::update() {
     process_input();
 
     SDL_RenderClear(renderer);
@@ -351,10 +323,6 @@ void Sdl2Runner::update() {
 
     SDL_RenderPresent(renderer);
 
-#ifdef __EMSCRIPTEN__
-    if (!running) {
-        emscripten_cancel_main_loop();
-    }
-#endif
+    return running;
 }
 

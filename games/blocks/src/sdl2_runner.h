@@ -9,9 +9,8 @@
 
 class Sdl2Runner {
 public:
-    Sdl2Runner(GameGrid *game_grid);
-    void run();
-    void update();
+    explicit Sdl2Runner(GameGrid *game_grid);
+    bool update();
 private:
     SDL_Renderer *renderer;
     map<BlockType, SDL_Texture*> block_textures;

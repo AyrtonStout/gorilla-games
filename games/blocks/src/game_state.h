@@ -10,6 +10,7 @@ public:
     int seed;
 
     GameState();
+    void update();
 };
 
 
