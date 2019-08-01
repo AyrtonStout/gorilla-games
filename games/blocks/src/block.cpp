@@ -21,10 +21,6 @@ const map<BlockType, string> Block::block_to_file_name = {
         { RED, "red-block" }
 };
 
-BlockType Block::get_block_type() {
-    return block_type;
-}
-
 int Block::get_render_offset_x() {
     return render_offset_x;
 }
@@ -36,35 +32,55 @@ int Block::get_render_offset_y() {
 Block::Block() {
     this->render_offset_x = 0;
     this->render_offset_y = 0;
-    this->block_type = (BlockType) (generator() % BlockType::COUNT);
+    this->block_type = L_BLUE; // Doesn't matter the value. It'll be getting changed when the block is made visible
 
     id = ++Block::next_block_id;
     block_action = BlockAction::NONE;
     action_frames_remaining = 0;
+    action_done = false;
 }
 
 int Block::get_id() {
     return id;
 }
 
-void Block::transition_to_state(BlockAction action) {
+void Block::transition_to_state(BlockAction action, int position) {
     block_action = action;
+    action_done = false;
     if (action == BlockAction::SLIDE_LEFT || action == BlockAction::SLIDE_RIGHT) {
         action_frames_remaining = FRAMES_TO_SLIDE;
     } else if (action == BlockAction::FLASHING_1) {
         action_frames_remaining = FRAMES_OF_LIGHT;
+    } else if (action == BlockAction::FLASHING_2) {
+        action_frames_remaining = FRAMES_OF_FACE + position * FRAME_PER_POP;
+    } else if (action == BlockAction::SLIDE_FLOAT) {
+        block_action = BlockAction::FLOATING;
+        action_frames_remaining = FRAMES_TO_START_FALLING;
+    } else if (action == BlockAction::POP_FLOAT) {
+        block_action = BlockAction::FLOATING;
+        action_frames_remaining = FRAME_POP_DROP_DELAY;
+    } else if (action == BlockAction::FALLING) {
+        action_frames_remaining = FRAMES_TO_FALL;
     }
 }
 
+void Block::transition_to_state(BlockAction action) {
+    transition_to_state(action, 0);
+}
+
 void Block::update() {
+    if (block_action != BlockAction::NONE) {
+        action_frames_remaining--;
+    }
+
+    if (action_frames_remaining == 0) {
+        action_done = true;
+    }
+
     switch (block_action) {
-        case BlockAction::NONE: {
-            return;
-        }
         case BlockAction::SLIDE_LEFT:
         case BlockAction::SLIDE_RIGHT: {
-            if (action_frames_remaining == 0) {
-                block_action = BlockAction::NONE;
+            if (action_done) {
                 render_offset_x = 0;
                 return;
             }
@@ -78,21 +94,55 @@ void Block::update() {
 
             break;
         }
-        case BlockAction::FLASHING_1: {
-            if (action_frames_remaining == 0) {
-                deleted = true;
-                block_action = BlockAction::NONE;
-            }
+        default: {
+            return;
         }
-    }
-
-    if (block_action != BlockAction::NONE) {
-        action_frames_remaining--;
     }
 }
 
-bool Block::is_even_action_frame() {
-    return action_frames_remaining % 2 == 0;
+int Block::get_action_frames_remaining() {
+    return action_frames_remaining;
+}
+
+bool Block::can_be_matched_with() {
+    if (deleted) {
+        return false;
+    }
+
+    switch (block_action) {
+        case BlockAction::NONE:
+            return true;
+        case BlockAction::FLASHING_1:
+            // This means the block was JUST told to start popping this frame. So it's still "matchable" to other blocks around it
+            return action_frames_remaining == FRAMES_OF_LIGHT;
+        default:
+            return false;
+    }
+}
+
+bool Block::can_prevent_falling() {
+    // Even deleted "sliding" blocks stop a fall, as it means we are swapping a block into that empty space
+    if (block_action == BlockAction::SLIDE_LEFT || block_action == BlockAction::SLIDE_RIGHT) {
+        return true;
+    }
+
+    return !deleted && block_action != BlockAction::FALLING && block_action != BlockAction::INVISIBLE_BUT_PASSABLE;
+}
+
+void Block::complete_action() {
+    // A block might chain multiple actions together (like falling multiple spots) so this might not always be 0
+    if (action_frames_remaining == 0 && block_action != BlockAction::INVISIBLE && block_action != BlockAction::INVISIBLE_BUT_PASSABLE) {
+        block_action = BlockAction::NONE;
+    }
+    action_done = false;
+}
+
+bool Block::is_action_done() {
+    return action_done;
+}
+
+bool Block::is_visible() {
+    return !deleted && block_action != BlockAction::INVISIBLE && block_action != BlockAction::INVISIBLE_BUT_PASSABLE;
 }
 
 #pragma clang diagnostic pop

@@ -5,16 +5,12 @@
 
 class GameCursor {
 public:
-    int get_x();
-    int get_y();
-    bool move(Direction direction);
+    int y;
+    int x;
+    bool move(Direction direction, bool allow_bottom_square);
     GameCursor();
     static const int CURSOR_WIDTH = 36;
     static const int CURSOR_HEIGHT = 20;
-
-private:
-    int m_x;
-    int m_y;
 };
 
 
