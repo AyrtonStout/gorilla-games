@@ -1,0 +1,50 @@
+package com.example.groove.controllers
+
+import com.example.groove.db.dao.PlayerQueueRepository
+import com.example.groove.db.model.PlayerQueue
+import com.example.groove.services.PlayerQueueService
+
+import org.springframework.web.bind.annotation.*
+
+@RestController
+@RequestMapping("api/queue")
+class QueueController(
+		private val playerQueueRepository: PlayerQueueRepository,
+		private val playerQueueService: PlayerQueueService
+) {
+
+	@PostMapping
+	fun enterQueue(): QueueIdDTO {
+		val newQueue = PlayerQueue().also { playerQueueRepository.save(it) }
+
+		return QueueIdDTO(id = newQueue.id)
+	}
+
+	@GetMapping("/{queueId}")
+	fun waitForQueue(@PathVariable queueId: Long): QueueWaitResponse {
+		// Long poll until a game is found
+		for (i in 1..TIMES_TO_CHECK) {
+			val gameId = playerQueueService.findMatch(queueId = queueId)
+			if (gameId != null) {
+				return QueueWaitResponse(gameId = gameId)
+			}
+			Thread.sleep(SECONDS_BETWEEN_CHECKS * 1000L)
+		}
+
+		return QueueWaitResponse(gameId = null)
+	}
+
+	companion object {
+		const val SECONDS_BETWEEN_CHECKS = 1
+		const val TIMES_TO_CHECK = 5
+	}
+
+
+	data class QueueIdDTO(
+			val id: Long
+	)
+
+	data class QueueWaitResponse(
+			val gameId: Long?
+	)
+}
