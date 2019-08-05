@@ -2,7 +2,8 @@ package com.example.groove.controllers
 
 import com.example.groove.db.dao.PlayerQueueRepository
 import com.example.groove.db.model.PlayerQueue
-import com.example.groove.services.PlayerQueueService
+import com.example.groove.services.PlayerQueueServiceImpl
+import org.slf4j.LoggerFactory
 
 import org.springframework.web.bind.annotation.*
 
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("api/queue")
 class QueueController(
 		private val playerQueueRepository: PlayerQueueRepository,
-		private val playerQueueService: PlayerQueueService
+		private val playerQueueService: PlayerQueueServiceImpl
 ) {
 
 	@PostMapping
@@ -24,7 +25,9 @@ class QueueController(
 	fun waitForQueue(@PathVariable queueId: Long): QueueWaitResponse {
 		// Long poll until a game is found
 		for (i in 1..TIMES_TO_CHECK) {
-			val gameId = playerQueueService.findMatch(queueId = queueId)
+            val gameId = synchronized(this) {
+                return@synchronized playerQueueService.findMatch(queueId = queueId)
+			}
 			if (gameId != null) {
 				return QueueWaitResponse(gameId = gameId)
 			}
@@ -36,7 +39,9 @@ class QueueController(
 
 	companion object {
 		const val SECONDS_BETWEEN_CHECKS = 1
-		const val TIMES_TO_CHECK = 5
+		const val TIMES_TO_CHECK = 25
+
+		val logger = LoggerFactory.getLogger(QueueController::class.java)!!
 	}
 
 

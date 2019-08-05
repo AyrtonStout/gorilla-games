@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import javax.persistence.*
 
 @Entity
+@Table(name = "user")
 data class User(
 		@Id
 		@GeneratedValue(strategy = GenerationType.IDENTITY)

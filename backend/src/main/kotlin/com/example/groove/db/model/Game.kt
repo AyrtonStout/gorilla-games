@@ -4,6 +4,7 @@ import java.sql.Timestamp
 import javax.persistence.*
 
 @Entity
+@Table(name = "game")
 data class Game(
 
 		@Id
