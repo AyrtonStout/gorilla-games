@@ -24,6 +24,7 @@ class QueueController(
 	@GetMapping("/{queueId}")
 	fun waitForQueue(@PathVariable queueId: Long): QueueWaitResponse {
 		// Long poll until a game is found
+		// FIXME this doesn't actually work. The new game is never found until this method is recalled
 		for (i in 1..TIMES_TO_CHECK) {
             val gameId = synchronized(this) {
                 return@synchronized playerQueueService.findMatch(queueId = queueId)
@@ -39,7 +40,7 @@ class QueueController(
 
 	companion object {
 		const val SECONDS_BETWEEN_CHECKS = 1
-		const val TIMES_TO_CHECK = 25
+		const val TIMES_TO_CHECK = 1
 
 		val logger = LoggerFactory.getLogger(QueueController::class.java)!!
 	}

@@ -2,13 +2,15 @@ import React from 'react';
 import {Slide, toast, ToastContainer} from "react-toastify";
 import {Api} from "../../services/api";
 import {TetrisContainer} from "../tetris-container/tetris-container";
+import {GameQueue} from "../game-queue/game-queue";
 
 export class SiteWrapper extends React.Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			version: null
+			version: null,
+			gameId: null
 		}
 	}
 
@@ -16,18 +18,23 @@ export class SiteWrapper extends React.Component {
 		Api.get('version').then((serverVersion) => {
 			console.log(serverVersion);
 			this.setState({ version: serverVersion.version });
-			toast.info("Hello")
 		})
+	}
+
+	setGameId(gameId) {
+		this.setState({ gameId: gameId });
 	}
 
 	render() {
 		return (
-			<div>
+			<div id="site-wrapper">
 				<ToastContainer autoClose={5000} hideProgressBar={true} transition={Slide}/>
-				<div>
-					{this.state.version}
-				</div>
-				<TetrisContainer/>
+				{
+					this.state.gameId !== null ?
+						<TetrisContainer/> :
+						<GameQueue setGameId={this.setGameId.bind(this)}/>
+				}
+				<h5>{ this.state.gameId ? 'Your game ID is ' + this.state.gameId : '' }</h5>
 			</div>
 		)
 	}
