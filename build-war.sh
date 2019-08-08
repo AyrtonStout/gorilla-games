@@ -17,6 +17,6 @@ cp frontend/dist/blocks.wasm backend/src/main/resources/static/dist/blocks.wasm
 
 cp frontend/node_modules/react-toastify/dist/ReactToastify.min.css backend/src/main/resources/static/node_modules/react-toastify/dist/ReactToastify.min.css
 
-(cd backend; gradle bootWar)
+(cd backend; sh gradlew bootWar)
 
 mv backend/build/libs/groove-0.0.1-SNAPSHOT.war .
