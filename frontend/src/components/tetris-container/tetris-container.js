@@ -15,6 +15,7 @@ export class TetrisContainer extends React.Component {
 
 	getModuleProperties() {
 		return {
+		  arguments: ['1234'], // Seed
 			preRun: [],
 			postRun: [],
 			locateFile: path => {
