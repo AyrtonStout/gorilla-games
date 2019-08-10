@@ -68,6 +68,28 @@ export function getNumber(key, defaultValue) {
 	return parsedNumber;
 }
 
+export function setString(key, string) {
+	if (typeof string !== "string") {
+		throw Error(`Non-string value (${string}) passed to setString for key ${key}`);
+	}
+
+	localStorage.setItem(key, string);
+}
+
+export function getString(key, defaultValue) {
+	const value = localStorage.getItem(key);
+
+	if (value === undefined || value === null) {
+		return defaultValue;
+	}
+
+	if (typeof value !== "string") {
+		throw Error(`Non-string value (${value}) retrieved with getString`);
+	}
+
+	return value;
+}
+
 export function deleteKey(key) {
 	localStorage.removeItem(key);
 }

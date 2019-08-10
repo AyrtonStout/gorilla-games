@@ -18,12 +18,16 @@ class GameMoveController(
 
 	@Transactional
 	@PostMapping("/{gameId}/move")
-	fun createMove(@RequestBody createGameMoveDTO: CreateGameMoveDTO): ResponseEntity<String> {
+	fun createMove(
+			@PathVariable gameId: Long,
+			@RequestBody createGameMoveDTO: CreateGameMoveDTO
+	): ResponseEntity<String> {
 		// If I wasn't too lazy to figure out how to wire in an EntityManager to load a proxy object I'd do that and avoid the DB hit
-		val game = gameRepository.getOne(createGameMoveDTO.gameId)
+		val game = gameRepository.getOne(gameId)
 		GameMove(
 				game = game,
-				actionPerformed = createGameMoveDTO.actionPerformed
+				actionPerformed = createGameMoveDTO.actionPerformed,
+				playerGuid = createGameMoveDTO.playerGuid
 		).also { gameMoveRepository.save(it) }
 
 		return ResponseEntity
@@ -59,7 +63,7 @@ class GameMoveController(
 
 
 	data class CreateGameMoveDTO(
-			val gameId: Long,
-			val actionPerformed: Int
+			val actionPerformed: Int,
+			val playerGuid: String
 	)
 }

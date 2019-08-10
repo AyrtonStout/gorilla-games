@@ -21,6 +21,9 @@ data class GameMove(
 		val actionPerformed: Int,
 
         @Column
-		val created: Timestamp = Timestamp(System.currentTimeMillis())
+		val created: Timestamp = Timestamp(System.currentTimeMillis()),
+
+		@Column
+		val playerGuid: String
 )
 

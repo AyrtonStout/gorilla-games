@@ -15,8 +15,9 @@ class QueueController(
 ) {
 
 	@PostMapping
-	fun enterQueue(): QueueIdDTO {
-		val newQueue = PlayerQueue().also { playerQueueRepository.save(it) }
+	fun enterQueue(@RequestBody enterQueueDTO: EnterQueueDTO): QueueIdDTO {
+		val newQueue = PlayerQueue(playerGuid = enterQueueDTO.playerGuid)
+				.also { playerQueueRepository.save(it) }
 
 		return QueueIdDTO(id = newQueue.id)
 	}
@@ -45,6 +46,10 @@ class QueueController(
 		val logger = LoggerFactory.getLogger(QueueController::class.java)!!
 	}
 
+
+	data class EnterQueueDTO(
+			val playerGuid: String
+	)
 
 	data class QueueIdDTO(
 			val id: Long

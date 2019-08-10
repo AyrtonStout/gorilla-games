@@ -20,6 +20,9 @@ data class PlayerQueue(
 		var game: Game? = null,
 
 		@Column(columnDefinition = "BIT") // MySQL lacks a Boolean type. Need to label it as a BIT column
-		var matched: Boolean = false
+		var matched: Boolean = false,
+
+		@Column
+		val playerGuid: String
 )
 

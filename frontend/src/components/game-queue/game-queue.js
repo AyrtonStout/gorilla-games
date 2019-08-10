@@ -1,5 +1,6 @@
 import React from 'react';
 import {Api} from "../../services/api";
+import * as LocalStorage from "../../services/local-storage";
 
 export class GameQueue extends React.Component {
 	constructor(props) {
@@ -19,8 +20,12 @@ export class GameQueue extends React.Component {
 			queueCalls: 0
 		});
 
-		Api.post('queue').then(res => {
-			this.setState({ queueId: res.id }, this.pollForMatch);
+		Api.post('queue', {
+			playerGuid: LocalStorage.getString('playerGuid')
+		}).then(res => {
+			this.setState({
+				queueId: res.id
+			}, this.pollForMatch);
 		});
 	}
 
