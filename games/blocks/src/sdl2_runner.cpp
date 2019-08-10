@@ -213,6 +213,12 @@ void Sdl2Runner::process_keypress(SDL_Event event) {
             break;
     }
 
+#ifdef __EMSCRIPTEN__
+    auto code = std::to_string(event.key.keysym.sym);
+    auto jsFunction = ("sendGameCode(" + code + ")");
+    emscripten_run_script(jsFunction.c_str());
+#endif
+
     if (game_state->num_players == 1) {
         return;
     }

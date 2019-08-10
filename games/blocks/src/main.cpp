@@ -14,11 +14,6 @@
 
 GameState state = GameState(2);
 
-#ifdef __EMSCRIPTEN__
-EM_JS(void, call_alert, (), {
-  globalTestJs();
-});
-#endif
 
 struct update_group {
     GameState *state;
@@ -57,11 +52,6 @@ int main() {
         updateWrapper(&updates);
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
-#endif
-
-
-#ifdef __EMSCRIPTEN__
-    call_alert();
 #endif
 
     return 0;
