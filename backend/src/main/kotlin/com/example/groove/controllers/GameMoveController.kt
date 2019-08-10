@@ -17,7 +17,7 @@ class GameMoveController(
 ) {
 
 	@Transactional
-	@PostMapping("/{gameId}/move")
+	@PostMapping("/game/{gameId}/move")
 	fun createMove(
 			@PathVariable gameId: Long,
 			@RequestBody createGameMoveDTO: CreateGameMoveDTO
