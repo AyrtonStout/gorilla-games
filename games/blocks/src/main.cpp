@@ -38,7 +38,11 @@ void updateWrapper(void *runner) {
 }
 
 
-int main() {
+int main(int argc, const char *argv[]) {
+    if (argc > 1) { // First arg is the name or path of the program or some junk
+        cout << argv[1]; // This will be the seed
+    }
+
     auto runner = Sdl2Runner(&state);
 
     update_group updates = { .state = &state, .runner = &runner };
